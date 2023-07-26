@@ -1,14 +1,26 @@
 {
     "configurations": [
         {
-            "name": "script.py",
+            "name": "copyright-to-timestamps",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/script.py",
+            "program": "${workspaceFolder}/copyright-to-timestamps.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "sample.txt"
+                "docs/copyright.txt"
+            ]
+        },
+        {
+            "name": "timestamp-offsetter",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/timestamp-offsetter.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "docs/timestamps.txt",
+                "+10"
             ]
         }
     ]
