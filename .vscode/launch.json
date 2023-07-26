@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "script.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/script.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "sample.txt"
+            ]
+        }
+    ]
+}
