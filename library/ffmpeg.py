@@ -144,13 +144,13 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
         ext = os.path.splitext(thumbnail)[1]
         jpg_thumbnail = thumbnail.replace(ext, '.jpg')
         small_thumbnails.append(jpg_thumbnail)
-    # convert all bmp's in one fell swoop
-    args = [
-        'magick', 'mogrify', '-format', 'jpg'
-    ] + thumbnails
-    exit_code, _, _ = run_subprocess(args, video_filepath)
-    if exit_code != 0:
-        raise RuntimeError('failed thumbnail generation!')
+        # TODO: think about processing a few at once, but not too many such that the arguments length is too long for the os...
+        args = [
+            'magick', 'mogrify', '-format', 'jpg', thumbnail
+        ]
+        exit_code, _, _ = run_subprocess(args, video_filepath)
+        if exit_code != 0:
+            raise RuntimeError('failed thumbnail generation!')
 
     # more size == more "detail" in the picture, but you could use any algo here
     # TODO: offer different algos to try

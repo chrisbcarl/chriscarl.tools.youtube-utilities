@@ -41,6 +41,9 @@ MAX_WORKERS = multiprocessing.cpu_count()
 
 def pipeline(video):
     # type: (Video) -> int
+    if not os.path.isdir(video.output_dirpath):
+        os.makedirs(video.output_dirpath)
+
     exit_code = 0
     topic = f'00 - {video} - trimming'
     video_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.video_filename))
