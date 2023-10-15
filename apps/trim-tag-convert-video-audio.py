@@ -15,8 +15,9 @@ Example:
 from __future__ import absolute_import, division
 import os
 import sys
-import argparse
+import shutil
 import logging
+import argparse
 import multiprocessing
 import concurrent.futures
 from typing import List
@@ -27,9 +28,9 @@ import yaml
 # project imports
 if os.getcwd() not in sys.path:
     sys.path.append(os.getcwd())
-from library.stdlib import NiceArgparseFormatter, indent
+from library.stdlib import NiceArgparseFormatter, indent, run_subprocess
 from library.media import Video
-from library.ffmpeg import run_ffmpeg, trim_args, mp3_args, generate_thumbnails
+from library.ffmpeg import trim_args, mp3_args, generate_thumbnails
 from library.mp3 import tag_mp3
 
 
@@ -40,20 +41,25 @@ MAX_WORKERS = multiprocessing.cpu_count()
 
 def pipeline(video):
     # type: (Video) -> int
+    exit_code = 0
     topic = f'00 - {video} - trimming'
-    video_filepath = video.filepath
+    video_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.video_filename))
     if not (video.start or video.stop):
         LOGGER.warning('%s - SKIPPING', topic)
+        if not os.path.isdir(video.output_dirpath):
+            os.makedirs(video.output_dirpath)
+        video_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.video_filename))
+        shutil.copy2(video.filepath, video_filepath)
     else:
         LOGGER.info('%s - STARTING', topic)
-        video_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.video_filename))
         args = trim_args(video.filepath, video_filepath, video.start, video.stop)
-        exit_code, _, _ = run_ffmpeg(args, video_filepath)
+        exit_code, _, _ = run_subprocess(args, video_filepath)
         if exit_code != 0:
             LOGGER.error('%s - FAILED', topic)
             return exit_code
         LOGGER.info('%s - PASSED', topic)
 
+    # # video tagging causes conversion to go bad, not sure why.
     # topic = f'02 - {video} - video tagging'
     # LOGGER.info('%s - STARTING', topic)
     # tag_mp3(
@@ -67,7 +73,7 @@ def pipeline(video):
     LOGGER.info('%s - STARTING', topic)
     audio_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.audio_filename))
     args = mp3_args(video_filepath, audio_filepath, bitrate=video.bitrate, sampling_frequency=48000)
-    exit_code, _, _ = run_ffmpeg(args, audio_filepath)
+    exit_code, _, _ = run_subprocess(args, audio_filepath)
     if exit_code != 0:
         LOGGER.error('%s - FAILED', topic)
         return exit_code
@@ -90,9 +96,10 @@ def pipeline(video):
 
     topic = f'04 - {video} - thumbnail generation'
     LOGGER.info('%s - STARTING', topic)
-    generate_thumbnails(video_filepath, video.output_dirpath, samples=50, keep=10)
+    generate_thumbnails(video_filepath, video.output_dirpath, samples=1000, keep=50)
     LOGGER.info('%s - PASSED', topic)
 
+    LOGGER.info('%s - FINISHED!!!', video)
 
     return exit_code
 
@@ -168,14 +175,15 @@ def main(
                     return_code = 1
                     break
                 else:
-                    LOGGER.info('%d succeeded with exit code %d!', video, exit_code)
+                    LOGGER.info('%s succeeded with exit code %d!', video, exit_code)
 
     if return_code != 0:
         return return_code
 
     # generate a socials text
+    LOGGER.info('generating the socials text!')
     if socials_filepath is None:
-        socials_filepath = os.path.abspath(os.path.join(default_video.output_dirpath, 'socials.txt'))
+        socials_filepath = os.path.abspath(os.path.join(default_video.output_dirpath, '../../' 'socials.txt'))
     dirname = os.path.dirname(socials_filepath)
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
@@ -194,6 +202,7 @@ def main(
         socials_lines.append('\n')
     with open(socials_filepath, 'w', encoding='utf-8') as w:
         w.write('\n'.join(socials_lines))
+    LOGGER.info('wrote socials text at "%s"!', socials_filepath)
 
 
 if __name__ == '__main__':

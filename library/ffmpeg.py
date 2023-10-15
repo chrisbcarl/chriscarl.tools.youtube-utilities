@@ -18,8 +18,8 @@ import subprocess
 from typing import List
 
 # project imports
-from .stdlib import get_safe_basename
 from .media import timestamp_to_seconds
+from .stdlib import run_subprocess
 
 LOGGER = logging.getLogger(__name__)
 FFMPEG_INSTALLED = False
@@ -31,50 +31,18 @@ try:
     FFMPEG_INSTALLED = True
 except subprocess.CalledProcessError:
     raise ImportError('"ffmpeg" not installed! consider a package manager like chocolatey or apt-get!') from None
+MAGICK_INSTALLED = False
+try:
+    if sys.platform == 'win32':
+        subprocess.check_call('magick -h > nul 2> nul', shell=True)
+    else:
+        subprocess.check_call(['magick', '-h'], stdout=os.devnull, stderr=os.devnull)
+    FFMPEG_INSTALLED = True
+except subprocess.CalledProcessError:
+    raise ImportError('"magick" not installed! consider a package manager like chocolatey or apt-get!') from None
 
 
-def run_ffmpeg(args, output_filepath):
-    dirname = os.path.dirname(output_filepath)
-    if not os.path.isdir(dirname):
-        os.makedirs(dirname)
 
-    stdout = None
-    stderr = None
-    shell = False
-
-    now = time.time()
-    basename = get_safe_basename(output_filepath)
-    dirpath = 'C:/temp/ffmpeg-std' if sys.platform == 'win32' else '/tmp/ffmpeg-std'
-    dirpath = os.path.abspath(dirpath)
-    if not os.path.isdir(dirpath):
-        os.makedirs(dirpath)
-    stdout_filepath = os.path.abspath(os.path.join(dirpath, f'{now}_{basename}.stdout'))
-    stdout = open(stdout_filepath, 'w', encoding='utf-8')
-    stderr_filepath = os.path.abspath(os.path.join(dirpath, f'{now}_{basename}.stderr'))
-    stderr = open(stderr_filepath, 'w', encoding='utf-8')
-    LOGGER.debug('stdout: "%s", stderr: "%s"', stdout_filepath, stderr_filepath)
-
-    kwargs = dict(shell=shell, stdout=stdout, stderr=stderr)
-    LOGGER.debug('invoking ffmpeg cmd: %r', args)
-    try:
-        exit_code = subprocess.check_call(args, universal_newlines=True, **kwargs)
-        LOGGER.debug('results for ffmpeg:  %r, exit_code: %d', args, exit_code)
-    except subprocess.CalledProcessError as cpe:
-        exit_code = cpe.returncode
-        LOGGER.exception('failed command!')
-        if isinstance(args, list):
-            LOGGER.debug(subprocess.list2cmdline(args))
-        else:
-            LOGGER.debug(args)
-    stdout.close()
-    with open(stdout_filepath, encoding='utf-8') as r:
-        stdout = r.read()
-    stderr.close()
-    with open(stderr_filepath, encoding='utf-8') as r:
-        stderr = r.read()
-    os.remove(stdout_filepath)
-    os.remove(stderr_filepath)
-    return exit_code, stdout, stderr
 
 
 def ffmpeg_args(input_filepath):
@@ -115,13 +83,16 @@ DURATION_REGEX = re.compile(r'duration: ([\d:]+)\.?', flags=re.IGNORECASE)
 def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
     # type: (str, str, int, int) -> List[str]
     '''
-    https://superuser.com/a/821680
+    # going with
+    https://superuser.com/a/821680  just the algo to calculate frame seconds
+    https://stackoverflow.com/a/28321986
+    https://alvinalexander.com/mac-os-x/mac-convert-bmp-images-jpeg-jpg-imagemagick
     '''
     if not os.path.isdir(output_dirpath):
         os.makedirs(output_dirpath)
 
     args = ['ffprobe', video_filepath]
-    exit_code, stdout, stderr = run_ffmpeg(args, video_filepath)
+    exit_code, stdout, stderr = run_subprocess(args, video_filepath)
     if exit_code != 0:
         raise RuntimeError('failed ffprobe!')
 
@@ -132,27 +103,66 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
     for i in range(1, samples + 1):
         skip_to = (i - 0.5) * seconds / (samples + 1)
         skip_to = f'{skip_to:0.2f}'
-        thumbnail_filepath = os.path.join(output_dirpath, f'{time.time()}.jpg')
-        # ffmpeg -ss 69 -i input.mp4 -vf select="eq(pict_type\,I)" -vframes 1 image69.jpg
-        args = ffmpeg_args(video_filepath)
-        args += [
-            '-ss', skip_to, '-vf', "select='eq(pict_type\\,I)'", '-vframes', '1', thumbnail_filepath
+
+        # incredibly fast, args must be in this order...
+        # ffmpeg -accurate_seek -ss 2000.30 -i 'whatever.mov'
+        #     -frames:v 1 period_down_%d.bmp
+        thumbnail_filepath = os.path.join(output_dirpath, f'{skip_to}.bmp')
+        args = [
+            'ffmpeg', '-y', '-accurate_seek', '-ss', skip_to, '-i', video_filepath, '-frames:v', '1', thumbnail_filepath
         ]
-        exit_code, _, _ = run_ffmpeg(subprocess.list2cmdline(args), video_filepath)
+        exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), video_filepath)
         if exit_code != 0:
             raise RuntimeError('failed thumbnail generation!')
+        thumbnails.append(thumbnail_filepath)
+
+        # thumbnail_filepath = os.path.join(output_dirpath, f'{time.time()}.jpg')
+        # # https://superuser.com/a/821680
+        # # ffmpeg -ss 69 -i input.mp4 -vf select="eq(pict_type\,I)" -vframes 1 image69.jpg
+        # args = ffmpeg_args(video_filepath)
+        # # this approach basically loads all the gigabytes at a time just to seek to the right spot, so its very inefficient
+        # args += [
+        #     '-ss', skip_to, '-vf', "select='eq(pict_type\\,I)'", '-vframes', '1', thumbnail_filepath
+        # ]
+        # exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), video_filepath)
+        # if exit_code != 0:
+        #     raise RuntimeError('failed thumbnail generation!')
+
+    # # https://stackoverflow.com/a/38259151
+    # args = ffmpeg_args(video_filepath)
+    # # select='eq(n\,100)+eq(n\,184)+eq(n\,213)'
+    # select = '+'.join(f'eq(n\\,{skip_to})' for skip_to in skip_tos)
+    # args += [
+    #     '-vf', f'select=\'{select}\'', '-vsync', '0', 'thumbnail-%d.jpg'
+    # ]
+    # exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), video_filepath)
+    # if exit_code != 0:
+    #     raise RuntimeError('failed thumbnail generation!')
+
+    small_thumbnails = []
+    for thumbnail in thumbnails:
+        ext = os.path.splitext(thumbnail)[1]
+        jpg_thumbnail = thumbnail.replace(ext, '.jpg')
+        small_thumbnails.append(jpg_thumbnail)
+    # convert all bmp's in one fell swoop
+    args = [
+        'magick', 'mogrify', '-format', 'jpg'
+    ] + thumbnails
+    exit_code, _, _ = run_subprocess(args, video_filepath)
+    if exit_code != 0:
+        raise RuntimeError('failed thumbnail generation!')
 
     # more size == more "detail" in the picture, but you could use any algo here
     # TODO: offer different algos to try
-    rankings = list(sorted(thumbnails, key=lambda x: os.path.getsize(x), reverse=True))
-    keepers = rankings[0:keep]
-    for thumbnail in rankings[keep:]:
+    rankings = list(sorted(small_thumbnails, key=os.path.getsize, reverse=True))
+    keepers = []
+    for top_candidate in rankings[0:keep]:
+        destination = os.path.join(output_dirpath, f'thumbnail-{os.path.basename(top_candidate)}')
+        shutil.copy2(top_candidate, destination)
+        keepers.append(top_candidate)
+
+    for thumbnail in thumbnails + small_thumbnails:
         os.remove(thumbnail)
-    for k in range(len(keepers)):
-        keeper = keepers[k]
-        destination = os.path.join(output_dirpath, f'thumbnail-{k}.jpg')
-        keepers[k] = destination
-        shutil.move(keeper, destination)
 
     LOGGER.debug('found %d thumbnails to keep: %s', len(keepers), keepers)
     return keepers
