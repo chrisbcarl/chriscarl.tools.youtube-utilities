@@ -1,0 +1,245 @@
+'''
+Author:      Chris Carl
+Date:        2023-10-15
+Email:       chrisbcarl@outlook.com
+
+Description:
+    OOP structs for holding media info
+'''
+# stdlib imports
+import os
+import copy
+import logging
+
+# third party imports
+import yaml
+
+# project imports
+from .stdlib import indent
+
+LOGGER = logging.getLogger(__name__)
+ARTIST_GENRE_MAP_FILEPATH = os.path.join(os.path.dirname(__file__), 'artist-genre-map.yaml')
+ARTIST_GENRE_MAP = dict()
+
+
+def load_artist_genre_map(yaml_filepath=ARTIST_GENRE_MAP_FILEPATH):
+    with open(yaml_filepath, encoding='utf-8') as r:
+        ARTIST_GENRE_MAP.update(yaml.safe_load(r))
+
+
+load_artist_genre_map()
+
+
+def timestamp_to_seconds(timestamp):
+    h, m, s = None, None, None
+    tokens = timestamp.split(':')
+    if len(tokens) == 3:
+        h, m, s = int(tokens[0]), int(tokens[1]), int(tokens[2])
+    elif len(tokens) == 2:
+        h, m, s = 0, int(tokens[0]), int(tokens[1])
+    elif len(tokens) == 1:
+        h, m, s = 0, 0, (tokens[0])
+    else:
+        raise ValueError('no idea how to process this one: %r' % timestamp)
+    seconds = 1 * s + 60 * m + 3600 * h
+    return seconds
+
+
+class Video(object):
+    CRITICAL_STATIC_ATTRIBUTES = [
+        'filepath',
+        'title',
+        'artist',
+        'album',
+        'genre',
+        'cover',
+        'date',
+        'year',
+        'track_num',
+    ]
+    NON_CRITICAL_STATIC_ATTRIBUTES = [
+        'start',
+        'stop',
+        'recording',
+        'resolution',
+        'bitrate',
+    ]
+    NON_CRITICAL_FORMATTABLE_ATTRIBUTES = [
+        'long_title',
+        'video_filename',
+        'audio_filename',
+        'output_dirpath',
+    ]
+
+    # critical static attributes
+    filepath = None
+    title = None
+    artist = None
+    album = None
+    genre = None
+    cover = None
+    date = None
+    year = None
+    track_num = None
+
+    # non-critical static attributes
+    start = None
+    stop = None
+    recording = None
+    resolution = None
+    bitrate = None
+
+    # non-critical formattable attributes
+    _long_title = None
+    _video_filename = None
+    _audio_filename = None
+    _output_dirpath = None
+
+    def __init__(
+        self,
+        # critical static attributes
+        filepath=None,
+        title=None,
+        artist=None,
+        album=None,
+        genre=None,
+        cover=None,
+        date=None,
+        year=None,
+        track_num=None,
+        # non-critical static attributes
+        start=None,
+        stop=None,
+        recording=None,
+        resolution=None,
+        bitrate=None,
+        # non-critical formattable attributes
+        long_title=None,
+        video_filename=None,
+        audio_filename=None,
+        output_dirpath=None,
+    ):
+        # critical static attributes
+        self.filepath = filepath
+        self.title = title
+        self.artist = artist
+        self.album = album
+        self.genre = genre
+        self.cover = cover
+        self.date = date
+        self.year = year
+        self.track_num = track_num
+
+        # non-critical static attributes
+        self.start = start
+        self.stop = stop
+        self.recording = recording
+        self.resolution = resolution
+        self.bitrate = bitrate
+
+        # non-critical formattable attributes
+        self._long_title = long_title
+        self._video_filename = video_filename
+        self._audio_filename = audio_filename
+        self._output_dirpath = output_dirpath
+
+        self.post_process()
+
+    def post_process(self, title_default='Live', genre_default=None):
+        self.title = self.title or title_default
+        if self.genre is None:
+            self.genre = ARTIST_GENRE_MAP.get(self.artist, genre_default)
+
+        self._format_values = {}
+        for lst in [Video.CRITICAL_STATIC_ATTRIBUTES, Video.NON_CRITICAL_STATIC_ATTRIBUTES]:
+            for key in lst:
+                val = getattr(self, key)
+                if val is not None:
+                    setattr(self, key, str(val))
+
+                safe = getattr(self, key)
+                if isinstance(safe, str):
+                    safe = safe.replace(' ', '-').lower()
+                self._format_values[key] = val
+                self._format_values[f'{key}_safe'] = safe
+        for attr in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
+            self._format_values[attr] = getattr(self, attr)  # trigger property computation
+
+    def __str__(self):
+        return f'Video[{self.track_num}]<"{self.filepath}">'
+
+    def verbose(self):
+        lines = [str(self), indent('# critical static attributes')]
+        for key in Video.CRITICAL_STATIC_ATTRIBUTES:
+            lines.append(indent(f'- {key}: {getattr(self, key)}', count=2))
+        lines.append(indent('# non-critical static attributes'))
+        for key in Video.NON_CRITICAL_STATIC_ATTRIBUTES:
+            lines.append(indent(f'- {key}: {getattr(self, key)}', count=2))
+        lines.append(indent('# non-critical formattable attributes'))
+        for key in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
+            lines.append(indent(f'- {key}: {getattr(self, key)}', count=2))
+        return '\n'.join(lines)
+
+    def _get_formatted(self, attr):
+        value = self._format_values.get(attr, None)
+        if value is None:
+            original_value = getattr(self, f'_{attr}')
+            if isinstance(original_value, str) and '{' in original_value:
+                formatted = original_value.format(**self._format_values)
+                LOGGER.debug('%s %r is a format, converting from %r to %r', self, attr, original_value, formatted)
+                self._format_values[attr] = formatted
+        return self._format_values.get(attr, None)
+
+    @property
+    def output_dirpath(self):
+        return self._get_formatted('output_dirpath')
+
+    @property
+    def long_title(self):
+        return self._get_formatted('long_title')
+
+    @property
+    def video_filename(self):
+        formatted = self._get_formatted('video_filename')
+        if isinstance(formatted, str) and self.filepath is not None:
+            original_ext = os.path.splitext(self.filepath)[1].lower()
+            if original_ext not in formatted:
+                formatted += original_ext
+        return formatted
+
+    @property
+    def audio_filename(self):
+        formatted = self._get_formatted('audio_filename')
+        if isinstance(formatted, str):
+            if '.mp3' not in formatted:
+                formatted += '.mp3'
+        return formatted
+
+    @classmethod
+    def from_other(cls, other, **kwargs):
+        new = copy.deepcopy(other)
+        for k, v in kwargs.items():
+            if hasattr(new, k):
+                setattr(new, k, v)
+        new.post_process()
+        return new
+
+    def problems(self):
+        problems = []
+        if not os.path.isfile(self.filepath):
+            problems.append(f'filepath "{self.filepath}" does not exist!')
+
+        if isinstance(self.cover, str):
+            ext = os.path.splitext(self.cover)[1]
+            if ext.lower() not in ['.jpeg', '.jpg']:
+                raise OSError('must provide cover in jpeg format!')
+
+        for key in Video.CRITICAL_STATIC_ATTRIBUTES:
+            if getattr(self, key) is None:
+                problems.append(f'{key} is None')
+
+        for key in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
+            if getattr(self, key) is None:
+                problems.append(f'{key} is None')
+
+        return problems

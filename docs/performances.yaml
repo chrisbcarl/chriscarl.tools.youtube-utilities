@@ -1,0 +1,18 @@
+# Author:      Chris Carl
+# Date:        2023-10-15
+# Email:       chrisbcarl@outlook.com
+
+# Description:
+#     example list of performances to chew through
+
+performances:
+
+- filepath: F:/sf/MMNT_20231013_184104634.mov
+  artist: Mojave Grey
+  start: null
+  stop: '40:37'
+
+- filepath: F:/sf/MMNT_20231013_192636932.mov
+  artist: Kaleena Zanders
+  start: null
+  stop: null

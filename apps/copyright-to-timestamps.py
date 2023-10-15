@@ -1,8 +1,17 @@
+'''
+Author:      Chris Carl
+Date:        2023-10-14
+Email:       chrisbcarl@outlook.com
+
+Description:
+    Convert the text from the Youtube Studio copyright section into usable timestamps in the description!
+'''
 # pylint: disable=(broad-except)
+
+# stdlib imports
 import sys
 import argparse
 import traceback
-
 
 
 if __name__ == '__main__':

@@ -1,10 +1,20 @@
+'''
+Author:      Chris Carl
+Date:        2023-10-14
+Email:       chrisbcarl@outlook.com
+
+Description:
+    Offset already established timestamps from somebody else by n seconds!
+'''
 # pylint: disable=(broad-except)
+
+# stdlib imports
 from __future__ import division
 import sys
+import re
 import argparse
 import traceback
 import datetime
-import re
 
 
 TIMESTAMP_REGEX = re.compile(r'(?P<timestamp>\d?\d?\:?\d?\d?\:?\d?\d?)(?P<spacing>\s?\-?\s?)(?P<song>[\w\s\'\-\_\&\@]+)')

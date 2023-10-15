@@ -1,0 +1,32 @@
+# Author:      Chris Carl
+# Date:        2023-10-15
+# Email:       chrisbcarl@outlook.com
+
+# Description:
+#     example of defaults that would apply to all of the other "performances"
+
+
+defaults:
+  # critical static attributes
+  track_num: null
+  filepath: null
+  title: null
+  artist: null
+  album: Breakaway Festival + Bay Area
+  genre: null
+  cover: f:/sf/media/cover.jpg
+  date: '2023-10-13'
+  year: '2023'
+
+  # non-critical static attributes
+  start: null
+  stop: null
+  recording: Full Concert
+  resolution: 4K60
+  bitrate: 320 kbps
+
+  # non-critical formattable attributes
+  long_title: "{artist} - {title} @ {album} {year}"                   # Night Tales - Live @ Breakaway Festival + Bay Area 2023
+  output_dirpath: "f:/sf/hard-work/{artist_safe}/{date}_breakaway-festival-bay-area"  # night-tales/2023-10-13_breakaway-festival-bay-area
+  video_filename: "{long_title} [{recording} {resolution}]"               # Night Tales - Live @ Breakaway Festival + Bay Area 2023 [Full Concert 4K60].mov
+  audio_filename: "{long_title} ({bitrate})"                              # Night Tales - Live @ Breakaway Festival + Bay Area 2023 (320 kbps).mp3
