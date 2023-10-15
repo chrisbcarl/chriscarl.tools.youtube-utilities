@@ -1,0 +1,23 @@
+defaults:
+  output_dirpath_per_file: "{artist_low}/{date}_breakaway-festival-bay-area"
+  artist_genre_map: <abspath-to>/artist-genre-map.yaml
+  cover: <abspath-to>/cover.jpg
+  album: Breakaway Festival + Bay Area 2023
+  date: 2023-10-13
+  year: 2023
+
+
+# video filepath
+MMNT_20231013_202208469.mov:
+  # mp3 tags
+  title: null
+  artist: Night Tales
+  genre: null
+  # video details
+  resolution: 4k60
+  start_at: null
+  end_at: 50:34
+
+  # based on defaults + movie metadata, MMNT_20231013_202208469.mov becomes
+  #   Night Tales - Live @ Breakaway Festival + Bay Area 2023
+  #   Night Tales - Live @ Breakaway Festival + Bay Area 2023 [Full Concert 4K60]
