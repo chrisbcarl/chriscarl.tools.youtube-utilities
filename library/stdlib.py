@@ -59,14 +59,14 @@ DEFAULT_STDOUT_FILE_DIRPATH = 'C:/temp/ffmpeg-std' if sys.platform == 'win32' el
 DEFAULT_STDOUT_FILE_DIRPATH = os.path.abspath(DEFAULT_STDOUT_FILE_DIRPATH)
 
 
-def run_subprocess(args, descriptive_filepath, dirpath=DEFAULT_STDOUT_FILE_DIRPATH):
-    # type: (List[str], str, str) -> Tuple[int, str, str]
+def run_subprocess(args, descriptive_filepath_for_stdout, dirpath=DEFAULT_STDOUT_FILE_DIRPATH, cwd=None):
+    # type: (List[str], str, str, str) -> Tuple[int, str, str]
     stdout = None
     stderr = None
     shell = False
 
     now = time.time()
-    basename = get_safe_basename(descriptive_filepath)
+    basename = get_safe_basename(descriptive_filepath_for_stdout)
     if not os.path.isdir(dirpath):
         os.makedirs(dirpath)
     if not os.path.isdir(dirpath):
@@ -77,24 +77,27 @@ def run_subprocess(args, descriptive_filepath, dirpath=DEFAULT_STDOUT_FILE_DIRPA
     stderr = open(stderr_filepath, 'w', encoding='utf-8')
     LOGGER.debug('stdout: "%s", stderr: "%s"', stdout_filepath, stderr_filepath)
 
-    kwargs = dict(shell=shell, stdout=stdout, stderr=stderr)
-    LOGGER.debug('invoking ffmpeg cmd: %r', args)
+    kwargs = dict(shell=shell, stdout=stdout, stderr=stderr, cwd=cwd)
+    LOGGER.debug('invoking ffmpeg cmd: %r, kwargs: %s', args, kwargs)
     try:
         exit_code = subprocess.check_call(args, universal_newlines=True, **kwargs)
         LOGGER.debug('results for ffmpeg:  %r, exit_code: %d', args, exit_code)
     except subprocess.CalledProcessError as cpe:
         exit_code = cpe.returncode
-        LOGGER.exception('failed command!')
+        LOGGER.exception('failed command with exit code %s!', exit_code)
         if isinstance(args, list):
-            LOGGER.debug(subprocess.list2cmdline(args))
+            LOGGER.error(subprocess.list2cmdline(args))
         else:
-            LOGGER.debug(args)
+            LOGGER.error(args)
+        LOGGER.error('stdout: "%s"', stdout_filepath)
+        LOGGER.error('stderr: "%s"', stderr_filepath)
     stdout.close()
     with open(stdout_filepath, encoding='utf-8') as r:
         stdout = r.read()
     stderr.close()
     with open(stderr_filepath, encoding='utf-8') as r:
         stderr = r.read()
-    os.remove(stdout_filepath)
-    os.remove(stderr_filepath)
+    if exit_code == 0:
+        os.remove(stdout_filepath)
+        os.remove(stderr_filepath)
     return exit_code, stdout, stderr

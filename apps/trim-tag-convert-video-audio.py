@@ -30,7 +30,7 @@ if os.getcwd() not in sys.path:
     sys.path.append(os.getcwd())
 from library.stdlib import NiceArgparseFormatter, indent, run_subprocess
 from library.media import Video
-from library.ffmpeg import trim_args, mp3_args, generate_thumbnails
+from library.ffmpeg import trim_args, mp3_args, generate_thumbnails, generate_gif
 from library.mp3 import tag_mp3
 
 
@@ -45,7 +45,7 @@ def pipeline(video):
         os.makedirs(video.output_dirpath)
 
     exit_code = 0
-    topic = f'00 - {video} - trimming'
+    topic = f'00 - TRIMMING - {video}'
     video_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.video_filename))
     if not (video.start or video.stop):
         LOGGER.warning('%s - SKIPPING', topic)
@@ -72,7 +72,7 @@ def pipeline(video):
     # )
     # LOGGER.info('%s - PASSED', topic)
 
-    topic = f'02 - {video} - mp3 conversion'
+    topic = f'02 - MP3 - {video}'
     LOGGER.info('%s - STARTING', topic)
     audio_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.audio_filename))
     args = mp3_args(video_filepath, audio_filepath, bitrate=video.bitrate, sampling_frequency=48000)
@@ -82,7 +82,7 @@ def pipeline(video):
         return exit_code
     LOGGER.info('%s - PASSED', topic)
 
-    topic = f'03 - {video} - audio tagging'
+    topic = f'03 - TAGGING - {video}'
     LOGGER.info('%s - STARTING', topic)
     tag_mp3(
         audio_filepath,
@@ -97,13 +97,23 @@ def pipeline(video):
     )
     LOGGER.info('%s - PASSED', topic)
 
-    topic = f'04 - {video} - thumbnail generation'
+    topic = f'04 - THUMBNAILS - {video}'
     LOGGER.info('%s - STARTING', topic)
-    generate_thumbnails(video_filepath, video.output_dirpath, samples=1000, keep=50)
+    thumbnail_dirpath = os.path.join(video.output_dirpath, 'thumbnails')
+    thumbnail_filepaths = generate_thumbnails(video_filepath, thumbnail_dirpath, samples=250, keep=50)
     LOGGER.info('%s - PASSED', topic)
 
-    LOGGER.info('%s - FINISHED!!!', video)
+    topic = f'05 - GIF - {video}'
+    LOGGER.info('%s - STARTING', topic)
+    gif_filepath = os.path.join(video.output_dirpath, f'{video.video_filename}.gif')
+    passed = generate_gif(thumbnail_filepaths, gif_filepath, delay=10, megabytes=16)
+    if passed:
+        LOGGER.info('%s - PASSED', topic)
+    else:
+        LOGGER.error('%s - FAILED', topic)
+        exit_code = 1
 
+    LOGGER.info('%s - FINISHED!!!', video)
     return exit_code
 
 
@@ -143,7 +153,7 @@ def main(
 
     if not confirm:
         try:
-            yes = input('does this look right? ').strip().lower()
+            yes = input('does this look right (y/n)? ').strip().lower()
             if not yes.startswith('y'):
                 LOGGER.warning('cancelling!')
                 return 2
@@ -178,7 +188,10 @@ def main(
                     return_code = 1
                     break
                 else:
-                    LOGGER.info('%s succeeded with exit code %d!', video, exit_code)
+                    if exit_code != 0:
+                        LOGGER.error('%s failed with exit code %d!', video, exit_code)
+                    else:
+                        LOGGER.info('%s succeeded with exit code %d!', video, exit_code)
 
     if return_code != 0:
         return return_code
@@ -199,9 +212,9 @@ def main(
             socials_lines.append(indent(f'{entry}: ???', count=2))
         socials_lines.append('')
         socials_lines.append(indent('publish request:', count=1))
-        socials_lines.append(indent(f"Hey {video.artist}, I loved your set at {video.album} and I managed to capture the whole thing! I'd like your permission to post, planning on going public Friday afternoon. If you'd rather I take it down or I send you the source files so you can release it yourself thats ok too. Thanks!", count=2))
+        socials_lines.append(f"Hey {video.artist}, I loved your set at {video.album} and I managed to capture the whole thing! I'd like your permission to post, planning on going public Friday afternoon. If you'd rather I take it down or I send you the source files so you can release it yourself thats ok too. Thanks!", count=2)
         socials_lines.append(indent('marketing post:', count=1))
-        socials_lines.append(indent(f"@{video.artist} your set had so much energy--there was a whole crowd stage right that knew all the words, it was infectious! Second to last song had me bopping and weaving, I loved this set!\n\nhttps://youtube-link.com", count=2))
+        socials_lines.append(f"@{video.artist} your set had so much energy--there was a whole crowd stage right that knew all the words, it was infectious! Second to last song had me bopping and weaving, I loved this set!\n\nhttps://youtube-link.com", count=2)
         socials_lines.append('\n')
     with open(socials_filepath, 'w', encoding='utf-8') as w:
         w.write('\n'.join(socials_lines))
@@ -211,10 +224,10 @@ def main(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=NiceArgparseFormatter)
     parser.add_argument('yamls', type=str, nargs='+', default=[], help='YAML files that may contain [defaults] or [performances]')
-    parser.add_argument('--confirm', action='store_true', help='do you want to skip confirmation and pre-confirm before seeing the output preview?')
-    parser.add_argument('--sequential', action='store_true', help='would you rather execute sequentially rather than concurrently?')
-    parser.add_argument('--log-level', type=str, default='INFO', help='log level plz?')
-    parser.add_argument('--socials-filepath', type=str, help='an explicit place to put your socials text guidance file')
+    parser.add_argument('-c', '--confirm', action='store_true', help='do you want to skip confirmation and pre-confirm before seeing the output preview?')
+    parser.add_argument('-s', '--sequential', action='store_true', help='would you rather execute sequentially rather than concurrently?')
+    parser.add_argument('-ll', '--log-level', type=str, default='INFO', help='log level plz?')
+    parser.add_argument('-sp', '--socials-filepath', type=str, help='an explicit place to put your socials text guidance file')
 
     args = parser.parse_args()
 

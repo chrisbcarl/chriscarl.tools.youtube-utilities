@@ -11,9 +11,9 @@ from __future__ import absolute_import
 import os
 import sys
 import re
-import time
 import shutil
 import logging
+import tempfile
 import subprocess
 from typing import List
 
@@ -69,7 +69,8 @@ def mp3_args(input_filepath, output_filepath, bitrate='320k', sampling_frequency
     ab = f'{numeric_bitrate}k'
 
     args += [
-        '-vn', '-acodec', 'libmp3lame',
+        '-vn',
+        '-acodec', 'libmp3lame',
         '-ac', '2', '-ab', ab, '-ar', str(sampling_frequency),
         output_filepath
     ]
@@ -166,3 +167,64 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
 
     LOGGER.debug('found %d thumbnails to keep: %s', len(keepers), keepers)
     return keepers
+
+
+def generate_gif(filepaths, output_filepath, delay=10, megabytes=10, loop=0):
+    # type: (List[str], str, int, int, int) -> bool
+    '''
+    Description:
+        create a gif out of a bunch of images and keep it under a certain megabytes
+    Arguments:
+        filepaths: str
+            a list of images in order
+        output_filepath: str
+        framerate: int
+            default 20
+            amount of ticks to delay before the next image in the sequence
+        megabytes: int
+            while greater than filezie, keep resizing down
+        loop: int
+            default 0--infinite
+    '''
+    temp_dirpath = tempfile.mkdtemp()
+    for f, filepath in enumerate(filepaths):
+        ext = os.path.splitext(filepath)[1]
+        new_filepath = os.path.join(temp_dirpath, f'{f}{ext}')
+        shutil.copy(filepath, new_filepath)
+    output_dirpath = os.path.dirname(output_filepath)
+    if not os.path.isdir(output_dirpath):
+        os.makedirs(output_dirpath)
+
+    percentage = 100
+    output_filepath_size = 0
+    while percentage > 0:
+        args = [
+            'magick', 'convert',
+            '-delay', str(delay),
+            '-loop', str(loop),
+        ]
+        if percentage < 100:
+            args += [
+                '-resize', f'{percentage}%',
+            ]
+        args += [
+            '*', output_filepath
+        ]
+        exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), os.path.basename(output_filepath), cwd=temp_dirpath)
+        if exit_code != 0:
+            LOGGER.error('failed gif generation!')
+            raise RuntimeError('failed gif generation!')
+
+        output_filepath_size = os.path.getsize(output_filepath) / (1024 * 1024)
+        if output_filepath_size <= megabytes:
+            break
+        else:
+            percentage = percentage // 4 * 3
+
+    shutil.rmtree(temp_dirpath)
+    if output_filepath_size > megabytes:
+        LOGGER.error('generated gif "%s" has size %0.2fMB which is greater than requested %0.2fMB', output_filepath, output_filepath_size, megabytes)
+        return False
+    else:
+        LOGGER.info('generated gif "%s" with size %0.2fMB!', output_filepath, output_filepath_size)
+        return True
