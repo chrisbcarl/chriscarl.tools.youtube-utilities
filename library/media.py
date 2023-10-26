@@ -166,7 +166,7 @@ class Video(object):
             self._format_values[attr] = getattr(self, attr)  # trigger property computation
 
     def __str__(self):
-        return f'Video[{self.track_num}]<"{self.filepath}">'
+        return f'Video[{self.track_num}]({self.filesize})<"{self.filepath}">'
 
     def verbose(self):
         lines = [str(self), indent('# critical static attributes')]
@@ -213,6 +213,17 @@ class Video(object):
         if isinstance(formatted, str):
             if '.mp3' not in formatted:
                 formatted += '.mp3'
+        return formatted
+
+    @property
+    def filesize(self):
+        filesize_bytes = os.path.getsize(self.filepath)
+        increments = ['KB', 'MB', 'GB']
+        formatted = 'unknownsize?'
+        for increment in increments:
+            filesize_bytes /= 1024
+            if filesize_bytes < 1024:
+                formatted = '{:0.3f}{}'.format(filesize_bytes, increment)
         return formatted
 
     @classmethod

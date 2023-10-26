@@ -136,6 +136,8 @@ def main(
     default_video = Video(**manifest['defaults'])
     videos = [Video.from_other(default_video, **ele) for ele in manifest['performances']]
     for v, video in enumerate(videos):
+        if video.track_num is not None:
+            continue
         video.track_num = v + 1
 
     # let the user know these will be the outputs in a tree
@@ -143,13 +145,27 @@ def main(
     tree = [video.verbose() for video in videos]
     LOGGER.info('\n%s', '\n'.join(tree))
 
+    unwise = False
+    frequency = {}
+    for video in videos:
+        if video.filepath not in frequency:
+            frequency[video.filepath] = 0
+        else:
+            LOGGER.error('PROBLEM: duplicate filepath used: "%s"!', video.filepath)
+            unwise = True
+        frequency[video.filepath] += 1
+
     # if any tags would be missing, tell the UserWarning
     for video in videos:
         problems = video.problems()
         if problems:
-            LOGGER.warning('"%s"', video.filepath)
+            unwise = True
+            LOGGER.error('PROBLEM: "%s"', video.filepath)
             for problem in problems:
-                LOGGER.warning('    %s', problem)
+                LOGGER.error('    PROBLEM: %s', problem)
+
+    if unwise and confirm:
+        raise RuntimeError('problems were detected! you dont want to confirm this!')
 
     if not confirm:
         try:
