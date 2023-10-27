@@ -132,9 +132,18 @@ def main(
         man_performances = man.get('performances', [])
         manifest['performances'].extend(man_performances)
 
+    problems = []
+
     # comb through all the metadata
     default_video = Video(**manifest['defaults'])
-    videos = [Video.from_other(default_video, **ele) for ele in manifest['performances']]
+    videos = []
+    for p, performance in enumerate(manifest['performances']):
+        try:
+            video = Video.from_other(default_video, **performance)
+            videos.append(video)
+        except Exception as e:
+            problems.append(f'performance idx {p} is no good thanks to {e}!')
+
     for v, video in enumerate(videos):
         if video.track_num is not None:
             continue
@@ -142,21 +151,22 @@ def main(
 
     # let the user know these will be the outputs in a tree
     LOGGER.info('proposed output tree will be as follows:')
-    tree = [video.verbose() for video in videos]
-    LOGGER.info('\n%s', '\n'.join(tree))
+    for v, video in enumerate(videos):
+        try:
+            LOGGER.info('\n%s', video.verbose())
+        except Exception as e:
+            problems.append(f'video idx {v} is no good thanks to {e}!')
 
-    unwise = False
     # if any tags would be missing, tell the UserWarning
     for video in videos:
-        problems = video.problems()
-        if problems:
-            unwise = True
-            LOGGER.error('PROBLEM: "%s"', video.filepath)
-            for problem in problems:
-                LOGGER.error('    PROBLEM: %s', problem)
+        for problem in video.problems():
+            problems.append(f'{problem} in "{video.filepath}"')
 
-    if unwise and confirm:
-        raise RuntimeError('problems were detected! you dont want to confirm this!')
+    if problems:
+        if confirm:
+            raise RuntimeError('problems were detected! you dont want to confirm this!')
+        for problem in problems:
+            LOGGER.error('PROBLEM: %s', problem)
 
     if not confirm:
         try:
