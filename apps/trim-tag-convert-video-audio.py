@@ -146,15 +146,6 @@ def main(
     LOGGER.info('\n%s', '\n'.join(tree))
 
     unwise = False
-    frequency = {}
-    for video in videos:
-        if video.filepath not in frequency:
-            frequency[video.filepath] = 0
-        else:
-            LOGGER.error('PROBLEM: duplicate filepath used: "%s"!', video.filepath)
-            unwise = True
-        frequency[video.filepath] += 1
-
     # if any tags would be missing, tell the UserWarning
     for video in videos:
         problems = video.problems()
@@ -195,6 +186,7 @@ def main(
                 for video in videos
             }
             for future in concurrent.futures.as_completed(future_to_exit_code):
+                exit_code = -1
                 video = future_to_exit_code[future]
                 try:
                     exit_code = future.result()
@@ -228,9 +220,9 @@ def main(
             socials_lines.append(indent(f'{entry}: ???', count=2))
         socials_lines.append('')
         socials_lines.append(indent('publish request:', count=1))
-        socials_lines.append(f"Hey {video.artist}, I loved your set at {video.album} and I managed to capture the whole thing! I'd like your permission to post, planning on going public Friday afternoon. If you'd rather I take it down or I send you the source files so you can release it yourself thats ok too. Thanks!", count=2)
+        socials_lines.append(f"Hey {video.artist}, I loved your set at {video.album} and I managed to capture the whole thing! I'd like your permission to post, planning on going public Friday afternoon. If you'd rather I take it down or I send you the source files so you can release it yourself thats ok too. Thanks!")
         socials_lines.append(indent('marketing post:', count=1))
-        socials_lines.append(f"@{video.artist} your set had so much energy--there was a whole crowd stage right that knew all the words, it was infectious! Second to last song had me bopping and weaving, I loved this set!\n\nhttps://youtube-link.com", count=2)
+        socials_lines.append(f"@{video.artist} your set had so much energy--there was a whole crowd stage right that knew all the words, it was infectious! Second to last song had me bopping and weaving, I loved this set!\n\nhttps://youtube-link.com")
         socials_lines.append('\n')
     with open(socials_filepath, 'w', encoding='utf-8') as w:
         w.write('\n'.join(socials_lines))

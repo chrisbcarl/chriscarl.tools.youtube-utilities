@@ -42,9 +42,6 @@ except subprocess.CalledProcessError:
     raise ImportError('"magick" not installed! consider a package manager like chocolatey or apt-get!') from None
 
 
-
-
-
 def ffmpeg_args(input_filepath):
     args = ['ffmpeg', '-y', '-i', input_filepath]
     return args
@@ -117,29 +114,6 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
             raise RuntimeError('failed thumbnail generation!')
         thumbnails.append(thumbnail_filepath)
 
-        # thumbnail_filepath = os.path.join(output_dirpath, f'{time.time()}.jpg')
-        # # https://superuser.com/a/821680
-        # # ffmpeg -ss 69 -i input.mp4 -vf select="eq(pict_type\,I)" -vframes 1 image69.jpg
-        # args = ffmpeg_args(video_filepath)
-        # # this approach basically loads all the gigabytes at a time just to seek to the right spot, so its very inefficient
-        # args += [
-        #     '-ss', skip_to, '-vf', "select='eq(pict_type\\,I)'", '-vframes', '1', thumbnail_filepath
-        # ]
-        # exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), video_filepath)
-        # if exit_code != 0:
-        #     raise RuntimeError('failed thumbnail generation!')
-
-    # # https://stackoverflow.com/a/38259151
-    # args = ffmpeg_args(video_filepath)
-    # # select='eq(n\,100)+eq(n\,184)+eq(n\,213)'
-    # select = '+'.join(f'eq(n\\,{skip_to})' for skip_to in skip_tos)
-    # args += [
-    #     '-vf', f'select=\'{select}\'', '-vsync', '0', 'thumbnail-%d.jpg'
-    # ]
-    # exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), video_filepath)
-    # if exit_code != 0:
-    #     raise RuntimeError('failed thumbnail generation!')
-
     small_thumbnails = []
     for thumbnail in thumbnails:
         ext = os.path.splitext(thumbnail)[1]
@@ -160,7 +134,7 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
     for top_candidate in rankings[0:keep]:
         destination = os.path.join(output_dirpath, f'thumbnail-{os.path.basename(top_candidate)}')
         shutil.copy2(top_candidate, destination)
-        keepers.append(top_candidate)
+        keepers.append(destination)
 
     for thumbnail in thumbnails + small_thumbnails:
         os.remove(thumbnail)
