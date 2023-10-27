@@ -48,6 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('list_txt', type=str, help='list.txt formatted as "file \'filepath\'\\nfile \'filepath\'\\n"')
     parser.add_argument('--resolution', type=str, default='4k', choices=RESOLUTIONS, help='resolution?')
     parser.add_argument('--framerate', type=str, default=60, help='framerate?')
+    parser.add_argument('--output', type=str, help='explicit output_filepath?')
     parser.add_argument('-ll', '--log-level', type=str, default='INFO', help='log level plz?')
 
     args = parser.parse_args()
@@ -82,6 +83,11 @@ if __name__ == '__main__':
             if ext is None:
                 ext = os.path.splitext(filepath)[1]
                 dirpath = os.path.dirname(filepath)
+                if not args.output:
+                    args.output = os.path.join(dirpath, f'concatenated{ext}')
+                else:
+                    args.output = os.path.abspath(args.output)
+                LOGGER.info('setting output file to "%s"', args.output)
             renamed = f'{left}-{resolution}-{args.framerate}fps{ext}'
             filepaths[filepath] = renamed
 
@@ -97,11 +103,14 @@ if __name__ == '__main__':
         LOGGER.info('converting %d / %d "%s" @ %s %sfps', f + 1, len(filepaths), filepath, args.resolution, args.framerate)
 
         cmd = [
+            # ffmpeg -hide_banner -h encoder=hevc_nvenc
             'ffmpeg', '-y',
             '-i', filepath,
             # can probably flip this to get 1080 instead of 1920
             '-vf', f'scale={resolution}:-2,setsar=1:1,fps={args.framerate}',
-            '-c:v', 'h264_nvenc',
+            '-c:v', 'hevc_nvenc',
+            # https://superuser.com/a/1667740 - the hevc_nvenc non existent flags
+            '-rc', 'constqp', '-qp', '24', '-preset', 'p7', '-tune', 'hq', '-rc-lookahead', '4',
             '-c:a', 'copy',
             renamed
         ]
@@ -110,13 +119,13 @@ if __name__ == '__main__':
         subprocess.check_call(cmd)
 
     LOGGER.info('concatting...')
-    output_filepath = os.path.join(dirpath, f'concatenated{ext}')
     cmd = [
-        'ffmpeg', '-safe', '0',
+        'ffmpeg', '-y',
+        '-safe', '0',
         '-f', 'concat',
         '-i', converted_list_filepath,
         '-c', 'copy',
-        output_filepath
+        args.output
     ]
     command = subprocess.list2cmdline(cmd)
     LOGGER.info(command)
