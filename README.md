@@ -15,6 +15,11 @@ python apps/timestamp-offsetter.py timestamps.txt "+369"
 ```bash
 python ./apps/trim-tag-convert-video-audio.py defaults-and-performances.yaml
 ```
+4. resize-concat: Take a bunch of mismatched resolution / framerate videos, and concatenate them!
+```bash
+python ./apps/resize-concat.py list.txt --resolution "4k" --framerate 60
+```
+
 
 # Setup
 ```bash

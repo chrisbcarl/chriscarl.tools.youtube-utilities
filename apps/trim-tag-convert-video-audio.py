@@ -26,8 +26,10 @@ from typing import List
 import yaml
 
 # project imports
-if os.getcwd() not in sys.path:
-    sys.path.append(os.getcwd())
+SCRIPT_FILEPATH = os.path.abspath(__file__)
+LIBRARY_DIRPATH = os.path.join(os.path.dirname(SCRIPT_FILEPATH), '../')
+if LIBRARY_DIRPATH not in sys.path:
+    sys.path.append(LIBRARY_DIRPATH)
 from library.stdlib import NiceArgparseFormatter, indent, run_subprocess
 from library.media import Video
 from library.ffmpeg import trim_args, mp3_args, generate_thumbnails, generate_gif
@@ -101,6 +103,8 @@ def pipeline(video):
     LOGGER.info('%s - STARTING', topic)
     thumbnail_dirpath = os.path.join(video.output_dirpath, 'thumbnails')
     thumbnail_filepaths = generate_thumbnails(video_filepath, thumbnail_dirpath, samples=250, keep=50)
+    for thumbnail_filepath in thumbnail_filepaths[0:3]:
+        shutil.copy(thumbnail_filepath, video.output_dirpath)
     LOGGER.info('%s - PASSED', topic)
 
     topic = f'05 - GIF - {video}'
