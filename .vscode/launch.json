@@ -12,7 +12,7 @@
             "name": "copyright-to-timestamps",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/copyright-to-timestamps.py",
+            "program": "${workspaceFolder}/apps/copyright-to-timestamps.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
@@ -23,13 +23,31 @@
             "name": "timestamp-offsetter",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/timestamp-offsetter.py",
+            "program": "${workspaceFolder}/apps/timestamp-offsetter.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
                 "docs/timestamps.txt",
                 "+10"
             ]
+        },
+        {
+            "name": "trim-tag-convert-video-audio YAML",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/apps/trim-tag-convert-video-audio.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "${input:trim-tag-convert-yaml}"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+        "id": "trim-tag-convert-yaml",
+        "description": "Filepath to a yaml file you want to convert",
+        "type": "promptString"
         }
     ]
 }

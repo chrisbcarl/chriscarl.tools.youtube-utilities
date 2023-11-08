@@ -184,15 +184,18 @@ class Video(object):
         value = self._format_values.get(attr, None)
         if value is None:
             original_value = getattr(self, f'_{attr}')
-            if isinstance(original_value, str) and '{' in original_value:
-                formatted = original_value.format(**self._format_values)
-                LOGGER.debug('%s %r is a format, converting from %r to %r', self, attr, original_value, formatted)
+            if isinstance(original_value, str):
+                if '{' in original_value:
+                    formatted = original_value.format(**self._format_values)
+                    LOGGER.debug('%s %r is a format, converting from %r to %r', self, attr, original_value, formatted)
+                else:
+                    formatted = original_value
                 self._format_values[attr] = formatted
         return self._format_values.get(attr, None)
 
     @property
     def output_dirpath(self):
-        return self._get_formatted('output_dirpath')
+        return os.path.abspath(self._get_formatted('output_dirpath'))
 
     @property
     def long_title(self):
