@@ -22,6 +22,31 @@ ARTIST_GENRE_MAP_FILEPATH = os.path.join(os.path.dirname(__file__), 'artist-genr
 ARTIST_GENRE_MAP = dict()
 
 
+def tpl_to_seconds(h, m, s):
+    total = h * 3600 + m * 60 + s
+    return total
+
+
+def tpl_to_timestamp(h, m, s, pad_zeros=False):
+    total = h * 3600 + m * 60 + s
+    if total >= 3600:
+        tokens = (h, m, s)
+        if pad_zeros:
+            fmt = '{:02d}:{:02d}:{:02d}'
+        else:
+            fmt = '{:d}:{:02d}:{:02d}'
+    else:
+        tokens = (m, s)
+        if pad_zeros:
+            fmt = '{:02d}:{:02d}'
+        else:
+            fmt = '{:d}:{:02d}'
+    timestamp = fmt.format(*tokens)
+    if total >= 3600 and not pad_zeros and timestamp.startswith('0'):
+        timestamp = timestamp.lstrip('0')
+    return timestamp
+
+
 def load_artist_genre_map(yaml_filepath=ARTIST_GENRE_MAP_FILEPATH):
     with open(yaml_filepath, encoding='utf-8') as r:
         ARTIST_GENRE_MAP.update(yaml.safe_load(r))
@@ -30,9 +55,9 @@ def load_artist_genre_map(yaml_filepath=ARTIST_GENRE_MAP_FILEPATH):
 load_artist_genre_map()
 
 
-def timestamp_to_seconds(timestamp):
+def timestamp_to_tuple(timestamp):
     h, m, s = None, None, None
-    tokens = timestamp.split(':')
+    tokens = timestamp.strip().split(':')
     if len(tokens) == 3:
         h, m, s = int(tokens[0]), int(tokens[1]), int(tokens[2])
     elif len(tokens) == 2:
@@ -41,6 +66,11 @@ def timestamp_to_seconds(timestamp):
         h, m, s = 0, 0, (tokens[0])
     else:
         raise ValueError('no idea how to process this one: %r' % timestamp)
+    return h, m, s
+
+
+def timestamp_to_seconds(timestamp):
+    h, m, s = timestamp_to_tuple(timestamp)
     seconds = 1 * s + 60 * m + 3600 * h
     return seconds
 

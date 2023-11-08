@@ -88,7 +88,7 @@ Control looping with -loop output option but the values are confusing. A value o
 Mute segments of video
 - ffmpeg -i in_video.mp4 -filter:a "volume=enable='between(t,34*60,35*60)':volume=0.1, volume=enable='between(t,37*60,40*60)':volume=0.1" -vcodec copy out_video.mp4
     - 0.1 volume between 34 to 35 minutes, 37 to 40 minutes
-- ffmpeg -i video.mp4 -af "volume=enable='between(t,5,10)':volume=0, volume=enable='between(t,15,20)':volume=0" ...
+- ffmpeg -i in.mp4 -vcodec copy -af "volume=enable='between(t,5,10)':volume=0, volume=enable='between(t,15,20)':volume=0" out.mp4
     - mute two sections: between 5-10s and 15-20s:
 
 Loop video to audio:

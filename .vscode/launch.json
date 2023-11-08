@@ -16,7 +16,8 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "docs/copyright.txt"
+                // "docs/copyright.txt"
+                "docs/muteme.txt"
             ]
         },
         {
