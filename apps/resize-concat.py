@@ -109,6 +109,7 @@ if __name__ == '__main__':
             # can probably flip this to get 1080 instead of 1920
             '-vf', f'scale={resolution}:-2,setsar=1:1,fps={args.framerate}',
             '-c:v', 'hevc_nvenc',
+            # https://superuser.com/questions/1296374/best-settings-for-ffmpeg-with-nvenc
             # https://superuser.com/a/1667740 - the hevc_nvenc non existent flags
             '-rc', 'constqp', '-qp', '24', '-preset', 'p7', '-tune', 'hq', '-rc-lookahead', '4',
             '-c:a', 'copy',
