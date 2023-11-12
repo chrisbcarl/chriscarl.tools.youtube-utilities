@@ -15,6 +15,7 @@ Example:
 from __future__ import absolute_import, division
 import os
 import sys
+import json
 import shutil
 import logging
 import argparse
@@ -31,7 +32,7 @@ LIBRARY_DIRPATH = os.path.join(os.path.dirname(SCRIPT_FILEPATH), '../')
 if LIBRARY_DIRPATH not in sys.path:
     sys.path.append(LIBRARY_DIRPATH)
 from library.stdlib import NiceArgparseFormatter, indent, run_subprocess
-from library.media import Video
+from library.media import Video, ARTIST_DB
 from library.ffmpeg import trim_args, mp3_args, generate_thumbnails, generate_gif
 from library.mp3 import tag_mp3
 
@@ -158,6 +159,7 @@ def main(
     for v, video in enumerate(videos):
         try:
             LOGGER.info('\n%s', video.verbose())
+            LOGGER.info('    socials:\n%s', indent(json.dumps(ARTIST_DB.get(video.artist, {}), indent=2), count=2))
         except Exception as e:
             problems.append(f'video idx {v} is no good thanks to {e}!')
 
@@ -230,8 +232,10 @@ def main(
     for video in videos:
         socials_lines.append(video.artist)
         socials_lines.append(indent('socials:', count=1))
+        artist_dict = ARTIST_DB.get(video.artist, {})
         for entry in ['twi', 'ins', 'ytb', 'mov', 'mp3']:
-            socials_lines.append(indent(f'{entry}: ???', count=2))
+            line = indent(f'{entry}: {artist_dict.get(entry, "???")}', count=2)
+            socials_lines.append(line)
         socials_lines.append('')
         socials_lines.append(indent('publish request:', count=1))
         socials_lines.append(f"Hey {video.artist}, I loved your set at {video.album} and I managed to capture the whole thing! I'd like your permission to post, planning on going public Friday afternoon. If you'd rather I take it down or I send you the source files so you can release it yourself thats ok too. Thanks!")

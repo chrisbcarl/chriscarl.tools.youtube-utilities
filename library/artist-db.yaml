@@ -1,0 +1,158 @@
+# Author:      Chris Carl
+# Date:        2023-10-15
+# Email:       chrisbcarl@outlook.com
+
+# Description:
+#     list of artists I've attended and needed to tag up
+
+# Updated:
+#     2023-11-12 - chriscarl - made it a dict so I can represent peoples socials
+
+null:
+  genre: null
+  ins: null
+  twi: null
+
+# real artists
+
+Air2Earth:
+  genre: Progressive House
+  ins: null
+  twi: null
+Amtrac:
+  genre: Progressive House
+  ins: null
+  twi: null
+Audien:
+  genre: Progressive House
+  ins: null
+  twi: null
+Baynk:
+  genre: Electronic
+  ins: null
+  twi: null
+Chet Porter:
+  genre: Dubstep
+  ins: null
+  twi: null
+DJ Diesel (Shaquille O'Neal):
+  genre: Dubstep
+  ins: null
+  twi: null
+Dr. Fresch:
+  genre: House
+  ins: null
+  twi: null
+Ecotek:
+  genre: House
+  ins: null
+  twi: null
+Essenger:
+  genre: Synthwave; Alternative Rock
+  ins: https://www.instagram.com/essenger
+  twi: https://twitter.com/EssengerMusic
+Faybl:
+  genre: House
+  ins: null
+  twi: null
+Ilan Bluestone:
+  genre: Trance
+  ins: null
+  twi: null
+Ivy Lab:
+  genre: Dubstep
+  ins: null
+  twi: null
+Jai Wolf:
+  genre: Future Bass
+  ins: null
+  twi: null
+James Ivy:
+  genre: Indie Rock
+  ins: null
+  twi: null
+Jaron:
+  genre: Future Bass
+  ins: null
+  twi: null
+Kaleena Zanders:
+  genre: House
+  ins: null
+  twi: null
+Machinedrum:
+  genre: House
+  ins: null
+  twi: null
+Magdalena Bay:
+  genre: Synth Pop
+  ins: null
+  twi: null
+Mojave Grey:
+  genre: House
+  ins: null
+  twi: null
+Madeon:
+  genre: House
+  ins: null
+  twi: null
+Night Tales:
+  genre: House
+  ins: null
+  twi: null
+Njoy:
+  genre: House
+  ins: null
+  twi: null
+Nostalgix:
+  genre: House
+  ins: null
+  twi: null
+Orno:
+  genre: Ambient
+  ins: null
+  twi: null
+Porter Robinson:
+  genre: House
+  ins: null
+  twi: null
+Puppet:
+  # https://www.whomusicmagazine.com/magazine/noticias/interview-puppet/
+  genre: Electronic Rock
+  ins: https://www.instagram.com/puppetmusic
+  twi: https://twitter.com/puppetsucks
+Qrion:
+  genre: House
+  ins: null
+  twi: null
+Rezz:
+  genre: EDM
+  ins: null
+  twi: null
+San Holo:
+  genre: Future Bass
+  ins: null
+  twi: null
+sfam:
+  genre: Dubstep
+  ins: null
+  twi: null
+Spirit Motel:
+  genre: Future Bass
+  ins: null
+  twi: null
+Toro y Moi:
+  genre: Chillwave
+  ins: null
+  twi: null
+Walker & Royce:
+  genre: House
+  ins: null
+  twi: null
+Wavedash:
+  genre: Future Bass
+  ins: null
+  twi: null
+Young Medicine:
+  genre: Synthwave; Alternative Rock
+  ins: https://www.instagram.com/youngmedicine
+  twi: https://twitter.com/Young_Medicine

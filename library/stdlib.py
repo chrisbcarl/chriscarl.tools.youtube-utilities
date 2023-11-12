@@ -101,3 +101,19 @@ def run_subprocess(args, descriptive_filepath_for_stdout, dirpath=DEFAULT_STDOUT
         os.remove(stdout_filepath)
         os.remove(stderr_filepath)
     return exit_code, stdout, stderr
+
+
+class LiveDict(object):
+    data = None
+    def __init__(self, reload_function, reload_function_args=None, reload_function_kwargs=None):
+        self.reload_function = reload_function
+        self.reload_function_args = reload_function_args or []
+        self.reload_function_kwargs = reload_function_kwargs or {}
+        self.data = self.reload_function(*self.reload_function_args, **self.reload_function_kwargs)
+
+    def reload(self):
+        self.data = self.reload_function(*self.reload_function_args, **self.reload_function_kwargs)
+
+    def get(self, key, default=None):
+        self.reload()
+        return self.data.get(key, default)

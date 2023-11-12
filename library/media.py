@@ -11,15 +11,12 @@ import os
 import copy
 import logging
 
-# third party imports
-import yaml
-
 # project imports
-from .stdlib import indent
+from .stdlib import indent, LiveDict
+from .thirdparty import load_yaml
 
 LOGGER = logging.getLogger(__name__)
-ARTIST_GENRE_MAP_FILEPATH = os.path.join(os.path.dirname(__file__), 'artist-genre-map.yaml')
-ARTIST_GENRE_MAP = dict()
+ARTIST_DB_FILEPATH = os.path.join(os.path.dirname(__file__), 'artist-db.yaml')
 
 
 def tpl_to_seconds(h, m, s):
@@ -47,12 +44,7 @@ def tpl_to_timestamp(h, m, s, pad_zeros=False):
     return timestamp
 
 
-def load_artist_genre_map(yaml_filepath=ARTIST_GENRE_MAP_FILEPATH):
-    with open(yaml_filepath, encoding='utf-8') as r:
-        ARTIST_GENRE_MAP.update(yaml.safe_load(r))
-
-
-load_artist_genre_map()
+ARTIST_DB = LiveDict(load_yaml, (ARTIST_DB_FILEPATH,))
 
 
 def timestamp_to_tuple(timestamp):
@@ -178,7 +170,7 @@ class Video(object):
     def post_process(self, title_default='Live', genre_default=None):
         self.title = self.title or title_default
         if self.genre is None:
-            self.genre = ARTIST_GENRE_MAP.get(self.artist, genre_default)
+            self.genre = ARTIST_DB.get(self.artist, {}).get('genre', genre_default)
 
         self._format_values = {}
         for lst in [Video.CRITICAL_STATIC_ATTRIBUTES, Video.NON_CRITICAL_STATIC_ATTRIBUTES]:

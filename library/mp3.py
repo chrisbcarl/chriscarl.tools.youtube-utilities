@@ -17,7 +17,7 @@ from eyed3.id3.frames import ImageFrame
 
 # project imports
 from .stdlib import get_value_from_dicts
-from .media import ARTIST_GENRE_MAP
+from .media import ARTIST_DB
 
 LOGGER = logging.getLogger(__name__)
 ENCODED_BY = 'chriscarl.com'
@@ -67,7 +67,7 @@ def get_mp3_tags_from_filepath(filepath):
     except Exception:
         LOGGER.exception('filepath "%s" couldnt get location or year!', filepath)
 
-    genre = ARTIST_GENRE_MAP.get(artist, None)
+    genre = ARTIST_DB.get(artist, {}).get('genre')
 
     LOGGER.debug('filepath:          "%s"', filepath)
     LOGGER.debug('    title:         %s', title)
