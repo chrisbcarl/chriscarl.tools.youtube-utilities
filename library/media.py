@@ -182,6 +182,7 @@ class Video(object):
                 safe = getattr(self, key)
                 if isinstance(safe, str):
                     safe = safe.replace(' ', '-').lower()
+                    safe = safe.replace(',-', '_').lower()
                 self._format_values[key] = val
                 self._format_values[f'{key}_safe'] = safe
         for attr in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
