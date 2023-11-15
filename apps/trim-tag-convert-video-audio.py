@@ -233,7 +233,7 @@ def main(
         socials_lines.append(video.artist)
         socials_lines.append(indent('socials:', count=1))
         artist_dict = ARTIST_DB.get(video.artist, {})
-        for entry in ['twi', 'ins', 'ytb', 'mov', 'mp3']:
+        for entry in ['twi', 'ins', 'mov', 'mp3', 'ytb']:
             line = indent(f'{entry}: {artist_dict.get(entry, "???")}', count=2)
             socials_lines.append(line)
         socials_lines.append('')
