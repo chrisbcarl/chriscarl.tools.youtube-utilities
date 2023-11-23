@@ -31,12 +31,20 @@ from library.media import timestamp_to_tuple, tpl_to_seconds, tpl_to_timestamp
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('input')
-    parser.add_argument('-a', '--any-territory', action='store_true', help='Count "Blocked in some territories" as well...')
-    parser.add_argument('-p', '--pad-zeros', action='store_true', help='Pad 00:00:01 if the max timestamp is 01:00:00')
+    parser.add_argument('-a',
+                        '--any-territory',
+                        action='store_true',
+                        help='Count "Blocked in some territories" as well...')
+    parser.add_argument('-p',
+                        '--pad-zeros',
+                        action='store_true',
+                        help='Pad 00:00:01 if the max timestamp is 01:00:00')
     args = parser.parse_args()
 
     with open(args.input, encoding='utf-8') as r:
-        lines = [line.strip() for line in r.read().splitlines() if line.strip()]
+        lines = [
+            line.strip() for line in r.read().splitlines() if line.strip()
+        ]
 
     if 'content used' not in lines[0].lower():
         print('unknown format! expected content used in 1st line!')
@@ -46,12 +54,14 @@ if __name__ == '__main__':
 
     blocked = {}
     data = {}
+    video_uses_this_songs_melody = None
     song, artist, start, stop, cpright = None, None, None, None, None
     tokens_count = -1
-    idx = - 1
+    idx = -1
     try:
         for idx, line in enumerate(lines[2:]):
-            if all(ele is not None for ele in [song, artist, start, stop, cpright]):
+            if all(ele is not None
+                   for ele in [song, artist, start, stop, cpright]):
                 song, artist, start, stop, cpright = None, None, None, None, None
                 hidden = False
 
@@ -62,12 +72,20 @@ if __name__ == '__main__':
                 if hidden:
                     song, artist = 'hidden', 'hidden'
             elif artist is None:
-                artist = line
+                if "Video uses this song's melody" in line:
+                    if video_uses_this_songs_melody is None:
+                        video_uses_this_songs_melody = input(
+                            'video uses this songs melody detected... artist name? '
+                        )
+                    artist = video_uses_this_songs_melody
+                else:
+                    artist = line
             elif start is None:
                 colonIdx = line.index(':')
-                timestamps = line[colonIdx+1:]
+                timestamps = line[colonIdx + 1:]
                 start, stop = timestamps.split('-')
-                start, stop = timestamp_to_tuple(start), timestamp_to_tuple(stop)
+                start, stop = timestamp_to_tuple(start), timestamp_to_tuple(
+                    stop)
             elif cpright is None:
                 noimpact = 'no impact' in lowline  # No impact
                 cannot = 'video cannot be seen' in lowline  # Video cannot be seen or monetized
@@ -113,10 +131,14 @@ if __name__ == '__main__':
         artist_song = blocked[timestamp_tpl]
         start, stop = timestamp_tpl
         start_secs, stop_secs = tpl_to_seconds(*start), tpl_to_seconds(*stop)
-        start_ts, stop_ts = tpl_to_timestamp(*start, pad_zeros=args.pad_zeros), tpl_to_timestamp(*stop, pad_zeros=args.pad_zeros)
+        start_ts, stop_ts = tpl_to_timestamp(
+            *start, pad_zeros=args.pad_zeros), tpl_to_timestamp(
+                *stop, pad_zeros=args.pad_zeros)
         print(f'[{start_ts}] to [{stop_ts}] {artist_song}')
         ffmpeg_mute_between.append((start_secs, stop_secs))
 
     print('\nffmpeg filter:')
-    ffmpeg_filter = ', '.join(f"volume=enable='between(t,{start},{stop})':volume=0" for start, stop in ffmpeg_mute_between)
+    ffmpeg_filter = ', '.join(
+        f"volume=enable='between(t,{start},{stop})':volume=0"
+        for start, stop in ffmpeg_mute_between)
     print(ffmpeg_filter)
