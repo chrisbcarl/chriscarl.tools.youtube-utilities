@@ -15,6 +15,10 @@ null:
 
 # real artists
 
+Afrojack:
+  genre: House
+  ins: https://www.instagram.com/afrojack
+  twi: https://twitter.com/afrojack
 Air2Earth:
   genre: Progressive House
   ins: null
@@ -75,6 +79,10 @@ Jaron:
   genre: Future Bass
   ins: null
   twi: null
+HALIENE:
+  genre: Dubstep
+  ins: https://www.instagram.com/haliene
+  twi: https://twitter.com/HALIENE
 Kaleena Zanders:
   genre: House
   ins: null
@@ -87,6 +95,10 @@ Magdalena Bay:
   genre: Synth Pop
   ins: null
   twi: null
+MitiS:
+  genre: Progressive House; Dubstep
+  ins: https://www.instagram.com/mitis
+  twi: https://twitter.com/MitisOfficial
 Mojave Grey:
   genre: House
   ins: null
@@ -156,6 +168,10 @@ Wavedash:
   genre: Future Bass
   ins: null
   twi: null
+yetep:
+  genre: Future Bass
+  ins: https://www.instagram.com/yetep
+  twi: https://twitter.com/imyetep
 Young Medicine:
   genre: Synthwave; Alternative Rock
   ins: https://www.instagram.com/youngmedicine
