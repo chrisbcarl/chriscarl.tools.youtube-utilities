@@ -119,7 +119,7 @@ if __name__ == '__main__':
         traceback.print_exc()
         sys.exit(1)
 
-    print('timestamps:')
+    print('Timestamps from copyright:')
     for tpl in sorted(data):
         timestamp = tpl_to_timestamp(*tpl, pad_zeros=args.pad_zeros)
         artist_song = data[tpl]
