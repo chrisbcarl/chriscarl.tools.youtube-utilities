@@ -70,7 +70,7 @@ if __name__ == '__main__':
                 song = line
                 hidden = 'hidden' in lowline  # Metadata is hidden, as the content in question has not been made publicly available by its provider.
                 if hidden:
-                    song, artist = 'hidden', 'hidden'
+                    song, artist = 'ID', 'ID'
             elif artist is None:
                 if "Video uses this song's melody" in line:
                     if video_uses_this_songs_melody is None:
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         traceback.print_exc()
         sys.exit(1)
 
-    print('timestamps:')
+    print('Timestamps from copyright:')
     for tpl in sorted(data):
         timestamp = tpl_to_timestamp(*tpl, pad_zeros=args.pad_zeros)
         artist_song = data[tpl]
