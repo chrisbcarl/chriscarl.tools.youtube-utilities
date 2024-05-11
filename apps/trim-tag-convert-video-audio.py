@@ -11,6 +11,7 @@ Example:
         docs/defaults.yaml docs/performances.yaml {shell_multiline}
         --sequential
 '''
+# pylint: disable=(broad-exception-caught)
 # stdlib imports
 from __future__ import absolute_import, division
 import os
@@ -126,9 +127,10 @@ def main(
     *manifests,
     confirm=False,
     sequential=False,
-    socials_filepath=None
+    socials_filepath=None,
+    cwd=os.getcwd(),
 ):
-    # type: (List[dict], bool, bool, str) -> int
+    # type: (List[dict], bool, bool, str, str) -> int
     # absorb all yamls / combine them
     manifest = dict(defaults={}, performances=[])
     for man in manifests:
@@ -223,7 +225,7 @@ def main(
     # generate a socials text
     LOGGER.info('generating the socials text!')
     if socials_filepath is None:
-        socials_filepath = os.path.abspath(os.path.join(default_video.output_dirpath, '../../' 'socials.txt'))
+        socials_filepath = os.path.abspath(os.path.join(cwd, 'socials.txt'))
     dirname = os.path.dirname(socials_filepath)
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
