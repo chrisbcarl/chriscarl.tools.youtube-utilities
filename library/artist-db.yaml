@@ -19,6 +19,10 @@ Afrojack:
   genre: House
   ins: https://www.instagram.com/afrojack
   twi: https://twitter.com/afrojack
+Adventure Club:
+  genre: Dubstep
+  ins: https://www.instagram.com/adventureclub
+  twi: https://x.com/AdventureDub
 Air2Earth:
   genre: Progressive House
   ins: https://www.instagram.com/porterrobinson
@@ -27,6 +31,10 @@ Amtrac:
   genre: Progressive House
   ins: null
   twi: null
+ARMNHMR:
+  genre: Future Bass
+  ins: https://www.instagram.com/armnhmr
+  twi: https://x.com/ARMNHMR
 Audien:
   genre: Progressive House
   ins: null
@@ -51,6 +59,10 @@ Ecotek:
   genre: House
   ins: null
   twi: null
+Egzod:
+  genre: Melodic Dubstep
+  ins: https://www.instagram.com/egzodmusic
+  twi: https://x.com/egzodmusic
 Essenger:
   genre: Synthwave; Alternative Rock
   ins: https://www.instagram.com/essenger
@@ -73,8 +85,8 @@ Ivy Lab:
   twi: null
 Jai Wolf:
   genre: Future Bass
-  ins: null
-  twi: null
+  ins: https://www.instagram.com/jaiwolfx
+  twi: https://x.com/jaiwolfx
 James Ivy:
   genre: Indie Rock
   ins: null
@@ -84,7 +96,7 @@ Jaron:
   ins: null
   twi: null
 HALIENE:
-  genre: Dubstep
+  genre: Melodic Dubstep
   ins: https://www.instagram.com/haliene
   twi: https://twitter.com/HALIENE
 Kaleena Zanders:
@@ -146,12 +158,24 @@ Qrion:
   twi: null
 Rezz:
   genre: EDM
-  ins: null
-  twi: null
+  ins: https://www.instagram.com/officialrezz
+  twi: https://x.com/OfficialRezz
+Rossy:
+  genre: Trap
+  ins: https://www.instagram.com/rossykate
+  twi: https://x.com/rossykate
+SABAI:
+  genre: Future Bass
+  ins: https://www.instagram.com/sabaimusic
+  twi: https://x.com/sabai_music
 San Holo:
   genre: Future Bass
   ins: null
   twi: null
+Seven Lions:
+  genre: Melodic Dubstep
+  ins: https://www.instagram.com/sevenlionsmusic
+  twi: https://x.com/SevenLionsMusic
 sfam:
   genre: Dubstep
   ins: null
@@ -160,10 +184,18 @@ Spirit Motel:
   genre: Future Bass
   ins: null
   twi: null
+Supercomputer:
+  genre: House
+  ins: https://www.instagram.com/super_computer_music
+  twi: null
 Toro y Moi:
   genre: Chillwave
   ins: null
   twi: null
+Vodenik:
+  genre: Dubstep
+  ins: https://www.instagram.com/vodenikmusic
+  twi: https://x.com/vodenikmusic
 Walker & Royce:
   genre: House
   ins: null
@@ -172,6 +204,10 @@ Wavedash:
   genre: Future Bass
   ins: null
   twi: null
+Whethan:
+  genre: Future Bass
+  ins: https://www.instagram.com/whethan/
+  twi: https://twitter.com/whethanmusic
 yetep:
   genre: Future Bass
   ins: https://www.instagram.com/yetep

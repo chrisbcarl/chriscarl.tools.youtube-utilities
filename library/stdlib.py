@@ -13,7 +13,7 @@ import time
 import logging
 import argparse
 import subprocess
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 # project imports
 
@@ -117,3 +117,34 @@ class LiveDict(object):
     def get(self, key, default=None):
         self.reload()
         return self.data.get(key, default)
+
+
+def find_common_directory(paths):
+    # type: (List[str]) -> Optional[str]
+    '''fairly crude algo:
+        D:/bnl/2024-08-05_railyards-boulevard_sacremento-ca/rossy/2024-08-25_rossy_la-state-historic-park/youtube.txt
+        D:/bnl/2024-08-05_railyards-boulevard_sacremento-ca/wavedash/2024-08-25_wavedash_la-state-historic-park/youtube.txt
+        D:/bnl/2024-08-05_railyards-boulevard_sacremento-ca/whethan/2024-08-25_whethan_la-state-historic-park/youtube.txt
+        D:/bnl/2024-08-05_railyards-boulevard_sacremento-ca/jai-wolf/2024-08-25_jai-wolf_la-state-historic-park/youtube.txt
+        D:/bnl/2024-08-05_railyards-boulevard_sacremento-ca/madeon/2024-08-25_madeon_la-state-historic-park/youtube.txt
+    should result in
+        D:/bnl/2024-08-05_railyards-boulevard_sacremento-ca
+    '''
+    path_tokens = []
+    longest = []
+    for path in paths:
+        fullpath = os.path.abspath(path)
+        tokens = fullpath.split(os.sep)
+        path_tokens.append(tokens)
+        if len(tokens) > len(longest):
+            longest = tokens
+
+    for i in range(len(longest), 0, -1):
+        lng = longest[0:i]
+        results = []
+        for path_token in path_tokens:
+            result = all(path_token[ele] == lng[ele] for ele in range(len(lng)))
+            results.append(result)
+        if all(results):
+            return os.path.join(*lng)
+    return None
