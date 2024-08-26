@@ -191,7 +191,10 @@ def trim_tag_convert_marketing_yt(
 
     if not confirm:
         try:
-            yes = input(f'{"modes: " + str(modes) + "; " if modes else ""}does this look right (y/n)? ').strip().lower()
+            print('\n\n')
+            print('videos:', len(videos))
+            print('modes: ', modes)
+            yes = input(f'does this look right (y/n)? ').strip().lower()
             if not yes.startswith('y'):
                 LOGGER.warning('cancelling!')
                 return 2
