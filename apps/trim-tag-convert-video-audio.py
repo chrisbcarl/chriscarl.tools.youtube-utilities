@@ -277,7 +277,7 @@ def trim_tag_convert_marketing_yt(
                 commentary = '\n'.join(ele.strip() for ele in video.commentary.splitlines()) if video.commentary else ''
                 additional_commentary = '\n'.join(ele.strip() for ele in video.additional_commentary.splitlines()) if video.additional_commentary else ''
                 if video.commentary and video.additional_commentary:
-                    all_commentary = f'\n{commentary}\n{additional_commentary}'
+                    all_commentary = f'\n{additional_commentary}\n{commentary}'
                 elif video.commentary and not video.additional_commentary:
                     all_commentary = f'\n{commentary}'
                 elif not video.commentary and video.additional_commentary:
