@@ -78,6 +78,7 @@ class Video(object):
         'date',
         'year',
         'track_num',
+        'location',
     ]
     NON_CRITICAL_STATIC_ATTRIBUTES = [
         'start',
@@ -85,6 +86,9 @@ class Video(object):
         'recording',
         'resolution',
         'bitrate',
+        'video_stats',
+        'commentary',
+        'additional_commentary',
     ]
     NON_CRITICAL_FORMATTABLE_ATTRIBUTES = [
         'long_title',
@@ -103,6 +107,7 @@ class Video(object):
     date = None
     year = None
     track_num = None
+    location = None
 
     # non-critical static attributes
     start = None
@@ -110,6 +115,12 @@ class Video(object):
     recording = None
     resolution = None
     bitrate = None
+    video_stats = None
+    commentary = None
+    additional_commentary = None
+    mov = None
+    mp3 = None
+    ytb = None
 
     # non-critical formattable attributes
     _long_title = None
@@ -129,12 +140,19 @@ class Video(object):
         date=None,
         year=None,
         track_num=None,
+        location=None,
         # non-critical static attributes
         start=None,
         stop=None,
         recording=None,
         resolution=None,
         bitrate=None,
+        video_stats=None,
+        commentary=None,
+        additional_commentary=None,
+        mov=None,
+        mp3=None,
+        ytb=None,
         # non-critical formattable attributes
         long_title=None,
         video_filename=None,
@@ -151,6 +169,7 @@ class Video(object):
         self.date = date
         self.year = year
         self.track_num = track_num
+        self.location = location
 
         # non-critical static attributes
         self.start = start
@@ -158,6 +177,12 @@ class Video(object):
         self.recording = recording
         self.resolution = resolution
         self.bitrate = bitrate
+        self.video_stats = video_stats
+        self.commentary = commentary
+        self.additional_commentary = additional_commentary
+        self.mov = mov
+        self.mp3 = mp3
+        self.ytb = ytb
 
         # non-critical formattable attributes
         self._long_title = long_title
