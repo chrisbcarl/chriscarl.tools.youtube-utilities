@@ -292,19 +292,23 @@ def trim_tag_convert_marketing_yt(
                     all_commentary = f'\n{commentary}'
                 elif not video.commentary and video.additional_commentary:
                     all_commentary = f'\n{additional_commentary}'
+                timestamps = ''
+                if video.timestamps:
+                    timestamps = '\n' + "\n".join(ele.strip() for ele in video.timestamps.splitlines() if ele.strip())
                 content = YOUTUBE_DESCRIPTION_TEMPLATE.format(
                     artist=video.artist,
                     twi=artist_dict.get('twi', '???'),
                     ins=artist_dict.get('ins', '???'),
-                    mov=artist_dict.get('mov', '???'),
-                    mp3=artist_dict.get('mp3', '???'),
-                    ytb=artist_dict.get('ytb', '???'),
+                    mov=video.mov or '???',
+                    mp3=video.mp3 or '???',
+                    ytb=video.ytb or '???',
                     all_commentary=all_commentary,
                     venue=video.venue,
                     city=video.city,
                     state=video.state,
                     date=video.date,
                     video_stats=video.video_stats,
+                    timestamps=timestamps,
                 )
                 w.write(content)
             LOGGER.info('wrote youtube text at "%s"!', youtube_filepath)

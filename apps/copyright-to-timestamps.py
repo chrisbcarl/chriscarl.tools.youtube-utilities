@@ -75,7 +75,7 @@ if __name__ == '__main__':
                 if "Video uses this song's melody" in line:
                     if video_uses_this_songs_melody is None:
                         video_uses_this_songs_melody = input(
-                            'video uses this songs melody detected... artist name? '
+                            f'video uses this songs melody detected... song {song!r}; artist name? '
                         )
                     artist = video_uses_this_songs_melody
                 else:

@@ -34,9 +34,9 @@ except subprocess.CalledProcessError:
 MAGICK_INSTALLED = False
 try:
     if sys.platform == 'win32':
-        subprocess.check_call('magick -h > nul 2> nul', shell=True)
+        subprocess.check_call('where.exe magick', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     else:
-        subprocess.check_call(['magick', '-h'], stdout=os.devnull, stderr=os.devnull)
+        subprocess.check_call(['which', 'magick'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     FFMPEG_INSTALLED = True
 except subprocess.CalledProcessError:
     raise ImportError('"magick" not installed! consider a package manager like chocolatey or apt-get!') from None

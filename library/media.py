@@ -91,6 +91,7 @@ class Video(object):
         'video_stats',
         'commentary',
         'additional_commentary',
+        'timestamps',
         'mov',
         'mp3',
         'ytb',
@@ -128,6 +129,7 @@ class Video(object):
     video_stats = None
     commentary = None
     additional_commentary = None
+    timestamps = None
     mov = None
     mp3 = None
     ytb = None
@@ -165,6 +167,7 @@ class Video(object):
         video_stats=None,
         commentary=None,
         additional_commentary=None,
+        timestamps=None,
         mov=None,
         mp3=None,
         ytb=None,
@@ -200,6 +203,7 @@ class Video(object):
         self.video_stats = video_stats
         self.commentary = commentary
         self.additional_commentary = additional_commentary
+        self.timestamps = timestamps
         self.mov = mov
         self.mp3 = mp3
         self.ytb = ytb
@@ -294,6 +298,8 @@ class Video(object):
 
     @property
     def filesize(self):
+        if not os.path.isfile(self.filepath):
+            return "DOES NOT EXIST"
         filesize_bytes = os.path.getsize(self.filepath)
         increments = ['KB', 'MB', 'GB']
         formatted = 'unknownsize?'

@@ -1,13 +1,13 @@
-Timestamps:
+Timestamps:{timestamps}
 Can the community assist? ^_^
 
 
 {artist}
     twi: {twi}
     ins: {ins}
-    mov: ???
-    mp3: ???
-    ytb: ???
+    mov: {mov}
+    mp3: {mp3}
+    ytb: {ytb}
 
 
 Commentary:{all_commentary}
