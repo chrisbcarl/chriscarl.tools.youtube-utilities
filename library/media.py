@@ -78,7 +78,9 @@ class Video(object):
         'date',
         'year',
         'track_num',
-        'location',
+        'venue',
+        'city',
+        'state',
     ]
     NON_CRITICAL_STATIC_ATTRIBUTES = [
         'start',
@@ -89,6 +91,12 @@ class Video(object):
         'video_stats',
         'commentary',
         'additional_commentary',
+        'mov',
+        'mp3',
+        'ytb',
+        'manifest_filepath',
+        'manifest_basename',
+        'manifest_filename',
     ]
     NON_CRITICAL_FORMATTABLE_ATTRIBUTES = [
         'long_title',
@@ -107,7 +115,9 @@ class Video(object):
     date = None
     year = None
     track_num = None
-    location = None
+    venue = None
+    city = None
+    state = None
 
     # non-critical static attributes
     start = None
@@ -121,6 +131,9 @@ class Video(object):
     mov = None
     mp3 = None
     ytb = None
+    manifest_filepath = None
+    manifest_basename = None
+    manifest_filename = None
 
     # non-critical formattable attributes
     _long_title = None
@@ -140,7 +153,9 @@ class Video(object):
         date=None,
         year=None,
         track_num=None,
-        location=None,
+        venue=None,
+        city=None,
+        state=None,
         # non-critical static attributes
         start=None,
         stop=None,
@@ -153,6 +168,9 @@ class Video(object):
         mov=None,
         mp3=None,
         ytb=None,
+        manifest_filepath=None,
+        manifest_basename=None,
+        manifest_filename=None,
         # non-critical formattable attributes
         long_title=None,
         video_filename=None,
@@ -169,7 +187,9 @@ class Video(object):
         self.date = date
         self.year = year
         self.track_num = track_num
-        self.location = location
+        self.venue = venue
+        self.city = city
+        self.state = state
 
         # non-critical static attributes
         self.start = start
@@ -183,6 +203,9 @@ class Video(object):
         self.mov = mov
         self.mp3 = mp3
         self.ytb = ytb
+        self.manifest_filepath = manifest_filepath
+        self.manifest_basename = manifest_basename
+        self.manifest_filename = manifest_filename
 
         # non-critical formattable attributes
         self._long_title = long_title
@@ -207,8 +230,11 @@ class Video(object):
                 safe = getattr(self, key)
                 if isinstance(safe, str):
                     safe = safe.replace(' ', '-').lower()
-                    safe = safe.replace(',-', '_').lower()
+                    safe = safe.replace('&', 'n')
+                    safe = safe.replace(',-', '_')
                 self._format_values[key] = val
+                if isinstance(val, str):
+                    self._format_values[f'{key}_lower'] = val.lower()
                 self._format_values[f'{key}_safe'] = safe
         for attr in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
             self._format_values[attr] = getattr(self, attr)  # trigger property computation

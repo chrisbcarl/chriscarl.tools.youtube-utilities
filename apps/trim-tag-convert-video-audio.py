@@ -134,15 +134,25 @@ def pipeline(video, modes=None):
 
 
 def trim_tag_convert_marketing_yt(
-    *manifests,
+    *yamls,
     confirm=False,
     sequential=False,
     marketing_filepath=None,
     cwd=os.getcwd(),
     modes=None,
 ):
-    # type: (List[dict], bool, bool, str, str, list) -> int
+    # type: (list, bool, bool, str, str, list) -> int
     modes = modes or MODES
+
+    manifests = []
+    for yaml_filepath in yamls:
+        yaml_filepath = os.path.abspath(yaml_filepath)
+        with open(yaml_filepath, encoding='utf-8') as r:
+            man = yaml.safe_load(r)
+        man['defaults']['manifest_filepath'] = yaml_filepath
+        man['defaults']['manifest_basename'] = os.path.basename(yaml_filepath)
+        man['defaults']['manifest_filename'] = os.path.splitext(os.path.basename(yaml_filepath))[0]
+        manifests.append(man)
 
     # absorb all yamls / combine them
     manifest = dict(defaults={}, performances=[])
@@ -277,7 +287,7 @@ def trim_tag_convert_marketing_yt(
                 commentary = '\n'.join(ele.strip() for ele in video.commentary.splitlines()) if video.commentary else ''
                 additional_commentary = '\n'.join(ele.strip() for ele in video.additional_commentary.splitlines()) if video.additional_commentary else ''
                 if video.commentary and video.additional_commentary:
-                    all_commentary = f'\n{commentary}\n{additional_commentary}'
+                    all_commentary = f'\n{additional_commentary}\n{commentary}'
                 elif video.commentary and not video.additional_commentary:
                     all_commentary = f'\n{commentary}'
                 elif not video.commentary and video.additional_commentary:
@@ -290,7 +300,9 @@ def trim_tag_convert_marketing_yt(
                     mp3=artist_dict.get('mp3', '???'),
                     ytb=artist_dict.get('ytb', '???'),
                     all_commentary=all_commentary,
-                    location=video.location,
+                    venue=video.venue,
+                    city=video.city,
+                    state=video.state,
                     date=video.date,
                     video_stats=video.video_stats,
                 )
@@ -315,15 +327,9 @@ def main():
         log_fmt = '%(asctime)s - %(levelname)10s - %(name)s - %(message)s'
     logging.basicConfig(level=args.log_level, format=log_fmt)
 
-    manifests = []
-    for manifest in args.yamls:
-        with open(manifest, encoding='utf-8') as r:
-            man = yaml.safe_load(r)
-        manifests.append(man)
-
     try:
         return_code = trim_tag_convert_marketing_yt(
-            *manifests,
+            *args.yamls,
             confirm=args.confirm,
             sequential=args.sequential,
             marketing_filepath=args.marketing_filepath,
