@@ -34,13 +34,14 @@
         },
         {
             "name": "trim-tag-convert-video-audio YAML",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/apps/trim-tag-convert-video-audio.py",
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "${input:trim-tag-convert-yaml}"
+                "${input:trim-tag-convert-yaml}",
+                "--modes", "market"
             ]
         }
     ],

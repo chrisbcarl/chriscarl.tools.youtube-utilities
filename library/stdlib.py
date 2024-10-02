@@ -5,6 +5,9 @@ Email:       chrisbcarl@outlook.com
 
 Description:
     Wraps utils i just can't live without
+
+Notes:
+    2024-10-02 - chrisbcarl@outlook.com - FIX: find_common_directory had a bug with the drive letter on Windows...
 '''
 # stdlib imports
 import os
@@ -146,5 +149,8 @@ def find_common_directory(paths):
             result = all(path_token[ele] == lng[ele] for ele in range(len(lng)))
             results.append(result)
         if all(results):
-            return os.path.join(*lng)
+            result = os.path.join(*lng)  # on windows this makes the drive wrong, so add that back in
+            if ':' in result:
+                result = result.replace(':', ':\\')
+            return result
     return None
