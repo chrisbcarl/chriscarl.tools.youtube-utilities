@@ -69,12 +69,10 @@ def timestamp_to_seconds(timestamp):
 
 class Video(object):
     CRITICAL_STATIC_ATTRIBUTES = [
-        'filepath',
         'title',
         'artist',
         'album',
         'genre',
-        'cover',
         'date',
         'year',
         'track_num',
@@ -97,7 +95,12 @@ class Video(object):
         'ytb',
         'manifest_filepath',
         'manifest_basename',
+        'manifest_dirpath',
         'manifest_filename',
+    ]
+    CRITICAL_FORMATTABLE_ATTRIBUTES = [
+        'filepath',
+        'cover',
     ]
     NON_CRITICAL_FORMATTABLE_ATTRIBUTES = [
         'long_title',
@@ -107,12 +110,10 @@ class Video(object):
     ]
 
     # critical static attributes
-    filepath = None
     title = None
     artist = None
     album = None
     genre = None
-    cover = None
     date = None
     year = None
     track_num = None
@@ -135,7 +136,12 @@ class Video(object):
     ytb = None
     manifest_filepath = None
     manifest_basename = None
+    manifest_dirpath = None
     manifest_filename = None
+
+    # critical formattable attributes
+    _filepath = None
+    _cover = None
 
     # non-critical formattable attributes
     _long_title = None
@@ -173,6 +179,7 @@ class Video(object):
         ytb=None,
         manifest_filepath=None,
         manifest_basename=None,
+        manifest_dirpath=None,
         manifest_filename=None,
         # non-critical formattable attributes
         long_title=None,
@@ -181,12 +188,10 @@ class Video(object):
         output_dirpath=None,
     ):
         # critical static attributes
-        self.filepath = filepath
         self.title = title
         self.artist = artist
         self.album = album
         self.genre = genre
-        self.cover = cover
         self.date = date
         self.year = year
         self.track_num = track_num
@@ -209,7 +214,12 @@ class Video(object):
         self.ytb = ytb
         self.manifest_filepath = manifest_filepath
         self.manifest_basename = manifest_basename
+        self.manifest_dirpath = manifest_dirpath
         self.manifest_filename = manifest_filename
+
+        # critical formattable attributes
+        self._filepath = filepath
+        self._cover = cover
 
         # non-critical formattable attributes
         self._long_title = long_title
@@ -219,28 +229,34 @@ class Video(object):
 
         self.post_process()
 
+    def _post_process(self, key):
+        val = getattr(self, key)
+        if val is not None:
+            setattr(self, key, str(val))
+
+        safe = getattr(self, key)
+        if isinstance(safe, str):
+            safe = safe.replace(' ', '-').lower()
+            safe = safe.replace('&', 'n')
+            safe = safe.replace(',-', '_')
+        self._format_values[key] = val
+        if isinstance(val, str):
+            self._format_values[f'{key}_lower'] = val.lower()
+        self._format_values[f'{key}_safe'] = safe
+
     def post_process(self, title_default='Live', genre_default=None):
         self.title = self.title or title_default
         if self.genre is None:
             self.genre = ARTIST_DB.get(self.artist, {}).get('genre', genre_default)
 
         self._format_values = {}
+        for lst in [Video.CRITICAL_FORMATTABLE_ATTRIBUTES]:
+            for key in lst:
+                self._post_process(f'_{key}')
         for lst in [Video.CRITICAL_STATIC_ATTRIBUTES, Video.NON_CRITICAL_STATIC_ATTRIBUTES]:
             for key in lst:
-                val = getattr(self, key)
-                if val is not None:
-                    setattr(self, key, str(val))
-
-                safe = getattr(self, key)
-                if isinstance(safe, str):
-                    safe = safe.replace(' ', '-').lower()
-                    safe = safe.replace('&', 'n')
-                    safe = safe.replace(',-', '_')
-                self._format_values[key] = val
-                if isinstance(val, str):
-                    self._format_values[f'{key}_lower'] = val.lower()
-                self._format_values[f'{key}_safe'] = safe
-        for attr in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
+                self._post_process(key)
+        for attr in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES + Video.CRITICAL_FORMATTABLE_ATTRIBUTES:
             self._format_values[attr] = getattr(self, attr)  # trigger property computation
 
     def __str__(self):
@@ -250,11 +266,14 @@ class Video(object):
         lines = [str(self), indent('# critical static attributes')]
         for key in Video.CRITICAL_STATIC_ATTRIBUTES:
             lines.append(indent(f'- {key}: {getattr(self, key)}', count=2))
+        lines.append(indent('# critical formattable attributes'))
+        for key in Video.CRITICAL_FORMATTABLE_ATTRIBUTES:
+            lines.append(indent(f'- {key}: {getattr(self, key)}', count=2))
         lines.append(indent('# non-critical static attributes'))
         for key in Video.NON_CRITICAL_STATIC_ATTRIBUTES:
             lines.append(indent(f'- {key}: {getattr(self, key)}', count=2))
         lines.append(indent('# non-critical formattable attributes'))
-        for key in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
+        for key in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES + Video.CRITICAL_FORMATTABLE_ATTRIBUTES:
             lines.append(indent(f'- {key}: {getattr(self, key)}', count=2))
         return '\n'.join(lines)
 
@@ -271,6 +290,22 @@ class Video(object):
                 self._format_values[attr] = formatted
         return self._format_values.get(attr, None)
 
+    # critical formattable attributes
+    @property
+    def filepath(self):
+        filepath = self._get_formatted('filepath')
+        if filepath is None:
+            return filepath
+        return os.path.abspath(filepath)
+
+    @property
+    def cover(self):
+        filepath = self._get_formatted('cover')
+        if filepath is None:
+            return filepath
+        return os.path.abspath(filepath)
+
+    # non-critical formattable attributes
     @property
     def output_dirpath(self):
         return os.path.abspath(self._get_formatted('output_dirpath'))
@@ -313,8 +348,10 @@ class Video(object):
     def from_other(cls, other, **kwargs):
         new = copy.deepcopy(other)
         for k, v in kwargs.items():
-            if hasattr(new, k):
-                setattr(new, k, v)
+            if hasattr(new, f'_{k}'):
+                setattr(new, f'_{k}', v)
+                continue
+            setattr(new, k, v)
         new.post_process()
         return new
 
@@ -332,8 +369,8 @@ class Video(object):
             if getattr(self, key) is None:
                 problems.append(f'{key} is None')
 
-        for key in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES:
-            if getattr(self, key) is None:
-                problems.append(f'{key} is None')
+        # for key in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES + Video.CRITICAL_FORMATTABLE_ATTRIBUTES:
+        #     if getattr(self, key) is None:
+        #         problems.append(f'{key} is None')
 
         return problems

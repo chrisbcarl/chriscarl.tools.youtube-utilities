@@ -38,7 +38,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/apps/trim-tag-convert-video-audio.py",
             "console": "integratedTerminal",
-            "justMyCode": true,
+            "justMyCode": false,
             "args": [
                 "${input:trim-tag-convert-yaml}"
             ]

@@ -151,6 +151,7 @@ def trim_tag_convert_marketing_yt(
             man = yaml.safe_load(r)
         man['defaults']['manifest_filepath'] = yaml_filepath
         man['defaults']['manifest_basename'] = os.path.basename(yaml_filepath)
+        man['defaults']['manifest_dirpath'] = os.path.dirname(yaml_filepath)
         man['defaults']['manifest_filename'] = os.path.splitext(os.path.basename(yaml_filepath))[0]
         manifests.append(man)
 
@@ -172,7 +173,7 @@ def trim_tag_convert_marketing_yt(
             video = Video.from_other(default_video, **performance)
             videos.append(video)
         except Exception as e:
-            problems.append(f'performance idx {p} is no good thanks to {e}!')
+            problems.append(f'performance idx {p} is no good thanks to exception: "{e}"!')
 
     for v, video in enumerate(videos):
         if video.track_num is not None:
@@ -186,7 +187,7 @@ def trim_tag_convert_marketing_yt(
             LOGGER.info('\n%s', video.verbose())
             LOGGER.info('    socials:\n%s', indent(json.dumps(ARTIST_DB.get(video.artist, {}), indent=2), count=2))
         except Exception as e:
-            problems.append(f'video idx {v} is no good thanks to {e}!')
+            problems.append(f'video idx {v} is no good thanks to exception: "{e}"!')
 
     # if any tags would be missing, tell the UserWarning
     for video in videos:
