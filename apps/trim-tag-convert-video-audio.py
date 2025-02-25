@@ -42,7 +42,7 @@ from library.mp3 import tag_mp3
 __doc__ = __doc__.format(filepath=__file__, shell_multiline='`' if sys.platform == 'win32' else '\\')
 LOGGER = logging.getLogger(__name__)
 MAX_WORKERS = multiprocessing.cpu_count()
-with open(os.path.join(os.path.dirname(library.__file__), 'youtube_description.template')) as r:
+with open(os.path.join(os.path.dirname(library.__file__), 'youtube_description.template'), encoding='utf-8') as r:
     YOUTUBE_DESCRIPTION_TEMPLATE = r.read()
 MODES = ['trim', 'mp3', 'tag', 'thumb', 'gif', 'market', 'yt']
 
