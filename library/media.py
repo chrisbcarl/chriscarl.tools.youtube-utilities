@@ -294,15 +294,19 @@ class Video(object):
     @property
     def filepath(self):
         filepath = self._get_formatted('filepath')
-        if filepath is None:
+        if filepath is None:  # it does make sense
             return filepath
+        if not os.path.isfile(filepath):
+            raise OSError(f'filepath at "{filepath}" does not exist!')
         return os.path.abspath(filepath)
 
     @property
     def cover(self):
         filepath = self._get_formatted('cover')
-        if filepath is None:
+        if filepath is None:  # it does make sense
             return filepath
+        if not os.path.isfile(filepath):
+            raise OSError(f'cover at "{filepath}" does not exist!')
         return os.path.abspath(filepath)
 
     # non-critical formattable attributes
