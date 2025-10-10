@@ -38,11 +38,14 @@ from library.media import Video, ARTIST_DB
 from library.ffmpeg import trim_args, mp3_args, generate_thumbnails, generate_gif
 from library.mp3 import tag_mp3
 
-
-__doc__ = __doc__.format(filepath=__file__, shell_multiline='`' if sys.platform == 'win32' else '\\')
+__doc__ = __doc__.format(
+    filepath=__file__,
+    shell_multiline='`' if sys.platform == 'win32' else '\\')
 LOGGER = logging.getLogger(__name__)
 MAX_WORKERS = multiprocessing.cpu_count()
-with open(os.path.join(os.path.dirname(library.__file__), 'youtube_description.template'), encoding='utf-8') as r:
+with open(os.path.join(os.path.dirname(library.__file__),
+                       'youtube_description.template'),
+          encoding='utf-8') as r:
     YOUTUBE_DESCRIPTION_TEMPLATE = r.read()
 MODES = ['trim', 'mp3', 'tag', 'thumb', 'gif', 'market', 'yt']
 
@@ -50,22 +53,23 @@ MODES = ['trim', 'mp3', 'tag', 'thumb', 'gif', 'market', 'yt']
 def pipeline(video, modes=None):
     # type: (Video, list) -> int
     modes = modes or MODES
-    if not os.path.isdir(video.output_dirpath):
-        os.makedirs(video.output_dirpath)
+    os.makedirs(video.output_dirpath, exist_ok=True)
 
     exit_code = 0
     if 'trim' in modes:
         topic = f'00 - TRIMMING - {video}'
-        video_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.video_filename))
+        video_filepath = os.path.abspath(
+            os.path.join(video.output_dirpath, video.video_filename))
         if not (video.start or video.stop):
             LOGGER.warning('%s - SKIPPING', topic)
-            if not os.path.isdir(video.output_dirpath):
-                os.makedirs(video.output_dirpath)
-            video_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.video_filename))
+            os.makedirs(video.output_dirpath, exist_ok=True)
+            video_filepath = os.path.abspath(
+                os.path.join(video.output_dirpath, video.video_filename))
             shutil.copy2(video.filepath, video_filepath)
         else:
             LOGGER.info('%s - STARTING', topic)
-            args = trim_args(video.filepath, video_filepath, video.start, video.stop)
+            args = trim_args(video.filepath, video_filepath, video.start,
+                             video.stop)
             exit_code, _, _ = run_subprocess(args, video_filepath)
             if exit_code != 0:
                 LOGGER.error('%s - FAILED', topic)
@@ -85,8 +89,12 @@ def pipeline(video, modes=None):
     if 'mp3' in modes:
         topic = f'02 - MP3 - {video}'
         LOGGER.info('%s - STARTING', topic)
-        audio_filepath = os.path.abspath(os.path.join(video.output_dirpath, video.audio_filename))
-        args = mp3_args(video_filepath, audio_filepath, bitrate=video.bitrate, sampling_frequency=48000)
+        audio_filepath = os.path.abspath(
+            os.path.join(video.output_dirpath, video.audio_filename))
+        args = mp3_args(video_filepath,
+                        audio_filepath,
+                        bitrate=video.bitrate,
+                        sampling_frequency=48000)
         exit_code, _, _ = run_subprocess(args, audio_filepath)
         if exit_code != 0:
             LOGGER.error('%s - FAILED', topic)
@@ -113,7 +121,10 @@ def pipeline(video, modes=None):
         topic = f'04 - THUMBNAILS - {video}'
         LOGGER.info('%s - STARTING', topic)
         thumbnail_dirpath = os.path.join(video.output_dirpath, 'thumbnails')
-        thumbnail_filepaths = generate_thumbnails(video_filepath, thumbnail_dirpath, samples=250, keep=50)
+        thumbnail_filepaths = generate_thumbnails(video_filepath,
+                                                  thumbnail_dirpath,
+                                                  samples=250,
+                                                  keep=50)
         for thumbnail_filepath in thumbnail_filepaths[0:3]:
             shutil.copy(thumbnail_filepath, video.output_dirpath)
         LOGGER.info('%s - PASSED', topic)
@@ -121,8 +132,12 @@ def pipeline(video, modes=None):
     if 'gif' in modes:
         topic = f'05 - GIF - {video}'
         LOGGER.info('%s - STARTING', topic)
-        gif_filepath = os.path.join(video.output_dirpath, f'{video.video_filename}.gif')
-        passed = generate_gif(thumbnail_filepaths, gif_filepath, delay=10, megabytes=16)
+        gif_filepath = os.path.join(video.output_dirpath,
+                                    f'{video.video_filename}.gif')
+        passed = generate_gif(thumbnail_filepaths,
+                              gif_filepath,
+                              delay=10,
+                              megabytes=16)
         if passed:
             LOGGER.info('%s - PASSED', topic)
         else:
@@ -134,12 +149,12 @@ def pipeline(video, modes=None):
 
 
 def trim_tag_convert_marketing_yt(
-    *yamls,
-    confirm=False,
-    sequential=False,
-    marketing_filepath=None,
-    cwd=os.getcwd(),
-    modes=None,
+        *yamls,
+        confirm=False,
+        sequential=False,
+        marketing_filepath=None,
+        cwd=os.getcwd(),
+        modes=None,
 ):
     # type: (list, bool, bool, str, str, list) -> int
     modes = modes or MODES
@@ -152,7 +167,8 @@ def trim_tag_convert_marketing_yt(
         man['defaults']['manifest_filepath'] = yaml_filepath
         man['defaults']['manifest_basename'] = os.path.basename(yaml_filepath)
         man['defaults']['manifest_dirpath'] = os.path.dirname(yaml_filepath)
-        man['defaults']['manifest_filename'] = os.path.splitext(os.path.basename(yaml_filepath))[0]
+        man['defaults']['manifest_filename'] = os.path.splitext(
+            os.path.basename(yaml_filepath))[0]
         manifests.append(man)
 
     # absorb all yamls / combine them
@@ -173,7 +189,8 @@ def trim_tag_convert_marketing_yt(
             video = Video.from_other(default_video, **performance)
             videos.append(video)
         except Exception as e:
-            problems.append(f'performance idx {p} is no good thanks to exception: "{e}"!')
+            problems.append(
+                f'performance idx {p} is no good thanks to exception: "{e}"!')
 
     for v, video in enumerate(videos):
         if video.track_num is not None:
@@ -185,9 +202,13 @@ def trim_tag_convert_marketing_yt(
     for v, video in enumerate(videos):
         try:
             LOGGER.info('\n%s', video.verbose())
-            LOGGER.info('    socials:\n%s', indent(json.dumps(ARTIST_DB.get(video.artist, {}), indent=2), count=2))
+            LOGGER.info(
+                '    socials:\n%s',
+                indent(json.dumps(ARTIST_DB.get(video.artist, {}), indent=2),
+                       count=2))
         except Exception as e:
-            problems.append(f'video idx {v} is no good thanks to exception: "{e}"!')
+            problems.append(
+                f'video idx {v} is no good thanks to exception: "{e}"!')
 
     # if any tags would be missing, tell the UserWarning
     for video in videos:
@@ -196,7 +217,8 @@ def trim_tag_convert_marketing_yt(
 
     if problems:
         if confirm:
-            raise RuntimeError('problems were detected! you dont want to confirm this!')
+            raise RuntimeError(
+                'problems were detected! you dont want to confirm this!')
         for problem in problems:
             LOGGER.error('PROBLEM: %s', problem)
 
@@ -224,7 +246,8 @@ def trim_tag_convert_marketing_yt(
                 return_code = exit_code
                 break
     else:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=MAX_WORKERS) as executor:
             # Start the load operations and mark each future with its URL
             future_to_exit_code = {
                 executor.submit(pipeline, video, modes=modes): video
@@ -242,9 +265,11 @@ def trim_tag_convert_marketing_yt(
                     break
                 else:
                     if exit_code != 0:
-                        LOGGER.error('%s failed with exit code %d!', video, exit_code)
+                        LOGGER.error('%s failed with exit code %d!', video,
+                                     exit_code)
                     else:
-                        LOGGER.info('%s succeeded with exit code %d!', video, exit_code)
+                        LOGGER.info('%s succeeded with exit code %d!', video,
+                                    exit_code)
 
     if return_code != 0:
         return return_code
@@ -252,13 +277,14 @@ def trim_tag_convert_marketing_yt(
     if 'market' in modes:
         LOGGER.info('generating the marketing text!')
         if marketing_filepath is None:
-            common_directory = find_common_directory([video.output_dirpath for video in videos])
+            common_directory = find_common_directory(
+                [video.output_dirpath for video in videos])
             if not common_directory:
                 common_directory = cwd
-            marketing_filepath = os.path.abspath(os.path.join(common_directory, 'marketing.txt'))
+            marketing_filepath = os.path.abspath(
+                os.path.join(common_directory, 'marketing.txt'))
         dirname = os.path.dirname(marketing_filepath)
-        if not os.path.isdir(dirname):
-            os.makedirs(dirname)
+        os.makedirs(dirname, exist_ok=True)
 
         socials_lines = []
         for video in videos:
@@ -266,13 +292,18 @@ def trim_tag_convert_marketing_yt(
             socials_lines.append(indent('socials:', count=1))
             artist_dict = ARTIST_DB.get(video.artist, {})
             for entry in ['twi', 'ins', 'mov', 'mp3', 'ytb']:
-                line = indent(f'{entry}: {artist_dict.get(entry, "???")}', count=2)
+                line = indent(f'{entry}: {artist_dict.get(entry, "???")}',
+                              count=2)
                 socials_lines.append(line)
             socials_lines.append('')
             socials_lines.append(indent('publish request:', count=1))
-            socials_lines.append(f"Hey {video.artist}, I loved your set at {video.album} and I managed to capture the whole thing! I'd like your permission to post, planning on going public Friday afternoon. If you'd rather I take it down or I send you the source files so you can release it yourself thats ok too. Thanks!")
+            socials_lines.append(
+                f"Hey {video.artist}, I loved your set at {video.album} and I managed to capture the whole thing! I'd like your permission to post, planning on going public Friday afternoon. If you'd rather I take it down or I send you the source files so you can release it yourself thats ok too. Thanks!"
+            )
             socials_lines.append(indent('marketing post:', count=1))
-            socials_lines.append(f"@{video.artist} your set had so much energy--there was a whole crowd stage right that knew all the words, it was infectious! Second to last song had me bopping and weaving, I loved this set!\n\nhttps://youtube-link.com")
+            socials_lines.append(
+                f"@{video.artist} your set had so much energy--there was a whole crowd stage right that knew all the words, it was infectious! Second to last song had me bopping and weaving, I loved this set!\n\nhttps://youtube-link.com"
+            )
             socials_lines.append('\n')
         with open(marketing_filepath, 'w', encoding='utf-8') as w:
             w.write('\n'.join(socials_lines))
@@ -281,12 +312,18 @@ def trim_tag_convert_marketing_yt(
     if 'yt' in modes:
         LOGGER.info('generating the youtube text!')
         for video in videos:
-            youtube_filepath = os.path.join(video.output_dirpath, 'youtube.txt')
+            youtube_filepath = os.path.join(video.output_dirpath,
+                                            'youtube.txt')
             with open(youtube_filepath, 'w', encoding='utf-8') as w:
                 artist_dict = ARTIST_DB.get(video.artist, {})
                 all_commentary = ''
-                commentary = '\n'.join(ele.strip() for ele in video.commentary.splitlines()) if video.commentary else ''
-                additional_commentary = '\n'.join(ele.strip() for ele in video.additional_commentary.splitlines()) if video.additional_commentary else ''
+                commentary = '\n'.join(
+                    ele.strip() for ele in
+                    video.commentary.splitlines()) if video.commentary else ''
+                additional_commentary = '\n'.join(
+                    ele.strip()
+                    for ele in video.additional_commentary.splitlines(
+                    )) if video.additional_commentary else ''
                 if video.commentary and video.additional_commentary:
                     all_commentary = f'\n{additional_commentary}\n{commentary}'
                 elif video.commentary and not video.additional_commentary:
@@ -295,7 +332,9 @@ def trim_tag_convert_marketing_yt(
                     all_commentary = f'\n{additional_commentary}'
                 timestamps = ''
                 if video.timestamps:
-                    timestamps = '\n' + "\n".join(ele.strip() for ele in video.timestamps.splitlines() if ele.strip())
+                    timestamps = '\n' + "\n".join(
+                        ele.strip() for ele in video.timestamps.splitlines()
+                        if ele.strip())
                 content = YOUTUBE_DESCRIPTION_TEMPLATE.format(
                     artist=video.artist,
                     twi=artist_dict.get('twi', '???'),
@@ -316,13 +355,43 @@ def trim_tag_convert_marketing_yt(
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=NiceArgparseFormatter)
-    parser.add_argument('yamls', type=str, nargs='+', default=[], help='YAML files that may contain [defaults] or [performances]')
-    parser.add_argument('-c', '--confirm', action='store_true', help='do you want to skip confirmation and pre-confirm before seeing the output preview?')
-    parser.add_argument('-s', '--sequential', action='store_true', help='would you rather execute sequentially rather than concurrently?')
-    parser.add_argument('-ll', '--log-level', type=str, default='INFO', help='log level plz?')
-    parser.add_argument('-mf', '--marketing-filepath', type=str, help='an explicit place to put your marketing text guidance file')
-    parser.add_argument('-m', '--modes', type=str, nargs='+', choices=MODES, default=MODES, help='only generate the following modes')
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=NiceArgparseFormatter)
+    parser.add_argument(
+        'yamls',
+        type=str,
+        nargs='+',
+        default=[],
+        help='YAML files that may contain [defaults] or [performances]')
+    parser.add_argument(
+        '-c',
+        '--confirm',
+        action='store_true',
+        help=
+        'do you want to skip confirmation and pre-confirm before seeing the output preview?'
+    )
+    parser.add_argument(
+        '-s',
+        '--sequential',
+        action='store_true',
+        help='would you rather execute sequentially rather than concurrently?')
+    parser.add_argument('-ll',
+                        '--log-level',
+                        type=str,
+                        default='INFO',
+                        help='log level plz?')
+    parser.add_argument(
+        '-mf',
+        '--marketing-filepath',
+        type=str,
+        help='an explicit place to put your marketing text guidance file')
+    parser.add_argument('-m',
+                        '--modes',
+                        type=str,
+                        nargs='+',
+                        choices=MODES,
+                        default=MODES,
+                        help='only generate the following modes')
 
     args = parser.parse_args()
 

@@ -23,7 +23,8 @@ from typing import List, Tuple, Optional
 LOGGER = logging.getLogger(__name__)
 
 
-class NiceArgparseFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter):
+class NiceArgparseFormatter(argparse.ArgumentDefaultsHelpFormatter,
+                            argparse.RawDescriptionHelpFormatter):
     pass
 
 
@@ -62,7 +63,10 @@ DEFAULT_STDOUT_FILE_DIRPATH = 'C:/temp/ffmpeg-std' if sys.platform == 'win32' el
 DEFAULT_STDOUT_FILE_DIRPATH = os.path.abspath(DEFAULT_STDOUT_FILE_DIRPATH)
 
 
-def run_subprocess(args, descriptive_filepath_for_stdout, dirpath=DEFAULT_STDOUT_FILE_DIRPATH, cwd=None):
+def run_subprocess(args,
+                   descriptive_filepath_for_stdout,
+                   dirpath=DEFAULT_STDOUT_FILE_DIRPATH,
+                   cwd=None):
     # type: (List[str], str, str, str) -> Tuple[int, str, str]
     stdout = None
     stderr = None
@@ -70,20 +74,22 @@ def run_subprocess(args, descriptive_filepath_for_stdout, dirpath=DEFAULT_STDOUT
 
     now = time.time()
     basename = get_safe_basename(descriptive_filepath_for_stdout)
-    if not os.path.isdir(dirpath):
-        os.makedirs(dirpath)
-    if not os.path.isdir(dirpath):
-        os.makedirs(dirpath)
-    stdout_filepath = os.path.abspath(os.path.join(dirpath, f'{now}_{basename}.stdout'))
+    os.makedirs(dirpath, exist_ok=True)
+    stdout_filepath = os.path.abspath(
+        os.path.join(dirpath, f'{now}_{basename}.stdout'))
     stdout = open(stdout_filepath, 'w', encoding='utf-8')
-    stderr_filepath = os.path.abspath(os.path.join(dirpath, f'{now}_{basename}.stderr'))
+    stderr_filepath = os.path.abspath(
+        os.path.join(dirpath, f'{now}_{basename}.stderr'))
     stderr = open(stderr_filepath, 'w', encoding='utf-8')
-    LOGGER.debug('stdout: "%s", stderr: "%s"', stdout_filepath, stderr_filepath)
+    LOGGER.debug('stdout: "%s", stderr: "%s"', stdout_filepath,
+                 stderr_filepath)
 
     kwargs = dict(shell=shell, stdout=stdout, stderr=stderr, cwd=cwd)
     LOGGER.debug('invoking ffmpeg cmd: %r, kwargs: %s', args, kwargs)
     try:
-        exit_code = subprocess.check_call(args, universal_newlines=True, **kwargs)
+        exit_code = subprocess.check_call(args,
+                                          universal_newlines=True,
+                                          **kwargs)
         LOGGER.debug('results for ffmpeg:  %r, exit_code: %d', args, exit_code)
     except subprocess.CalledProcessError as cpe:
         exit_code = cpe.returncode
@@ -108,14 +114,20 @@ def run_subprocess(args, descriptive_filepath_for_stdout, dirpath=DEFAULT_STDOUT
 
 class LiveDict(object):
     data = None
-    def __init__(self, reload_function, reload_function_args=None, reload_function_kwargs=None):
+
+    def __init__(self,
+                 reload_function,
+                 reload_function_args=None,
+                 reload_function_kwargs=None):
         self.reload_function = reload_function
         self.reload_function_args = reload_function_args or []
         self.reload_function_kwargs = reload_function_kwargs or {}
-        self.data = self.reload_function(*self.reload_function_args, **self.reload_function_kwargs)
+        self.data = self.reload_function(*self.reload_function_args,
+                                         **self.reload_function_kwargs)
 
     def reload(self):
-        self.data = self.reload_function(*self.reload_function_args, **self.reload_function_kwargs)
+        self.data = self.reload_function(*self.reload_function_args,
+                                         **self.reload_function_kwargs)
 
     def get(self, key, default=None):
         self.reload()
@@ -146,10 +158,13 @@ def find_common_directory(paths):
         lng = longest[0:i]
         results = []
         for path_token in path_tokens:
-            result = all(path_token[ele] == lng[ele] for ele in range(len(lng)))
+            result = all(path_token[ele] == lng[ele]
+                         for ele in range(len(lng)))
             results.append(result)
         if all(results):
-            result = os.path.join(*lng)  # on windows this makes the drive wrong, so add that back in
+            result = os.path.join(
+                *lng
+            )  # on windows this makes the drive wrong, so add that back in
             if ':' in result:
                 result = result.replace(':', ':\\')
             return result

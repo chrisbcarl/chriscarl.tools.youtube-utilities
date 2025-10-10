@@ -30,8 +30,9 @@ if LIBRARY_DIRPATH not in sys.path:
 from library.stdlib import NiceArgparseFormatter
 from library.ffmpeg import generate_thumbnails
 
-
-__doc__ = __doc__.format(filepath=__file__, shell_multiline='`' if sys.platform == 'win32' else '\\')
+__doc__ = __doc__.format(
+    filepath=__file__,
+    shell_multiline='`' if sys.platform == 'win32' else '\\')
 LOGGER = logging.getLogger(__name__)
 MAX_WORKERS = multiprocessing.cpu_count()
 DEFAULT_SAMPLES = 250
@@ -46,12 +47,15 @@ def main(
 ):
     # type: (str, str, int, int) -> int
     if output_dirpath is None:
-        output_dirpath = os.path.join(os.path.dirname(video_filepath), 'thumbnails')
-    if not os.path.isdir(output_dirpath):
-        os.makedirs(output_dirpath)
+        output_dirpath = os.path.join(os.path.dirname(video_filepath),
+                                      'thumbnails')
+    os.makedirs(output_dirpath, exist_ok=True)
     topic = f'THUMBNAILS - "{video_filepath}" -> "{output_dirpath}" (samples=250, keep=50)'
     LOGGER.info('%s - STARTING', topic)
-    thumbnail_filepaths = generate_thumbnails(video_filepath, output_dirpath, samples=samples, keep=keep)
+    thumbnail_filepaths = generate_thumbnails(video_filepath,
+                                              output_dirpath,
+                                              samples=samples,
+                                              keep=keep)
     for thumbnail_filepath in thumbnail_filepaths[0:3]:
         shutil.copy(thumbnail_filepath, os.path.dirname(video_filepath))
     LOGGER.info('%s - PASSED', topic)
@@ -59,12 +63,32 @@ def main(
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=NiceArgparseFormatter)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=NiceArgparseFormatter)
     parser.add_argument('video_filepath', type=str, help='video filepath')
-    parser.add_argument('-o', '--output-dirpath', type=str, help='either explicit or will be saved to thumbnails folder at the provided video filepath dirpath')
-    parser.add_argument('-s', '--samples', type=int, default=DEFAULT_SAMPLES, help='how many to take?')
-    parser.add_argument('-k', '--keep', type=int, default=DEFAULT_KEEP, help='how many of the samples to keep? set equal to keep all of them')
-    parser.add_argument('-ll', '--log-level', type=str, default='INFO', help='log level plz?')
+    parser.add_argument(
+        '-o',
+        '--output-dirpath',
+        type=str,
+        help=
+        'either explicit or will be saved to thumbnails folder at the provided video filepath dirpath'
+    )
+    parser.add_argument('-s',
+                        '--samples',
+                        type=int,
+                        default=DEFAULT_SAMPLES,
+                        help='how many to take?')
+    parser.add_argument(
+        '-k',
+        '--keep',
+        type=int,
+        default=DEFAULT_KEEP,
+        help='how many of the samples to keep? set equal to keep all of them')
+    parser.add_argument('-ll',
+                        '--log-level',
+                        type=str,
+                        default='INFO',
+                        help='log level plz?')
 
     args = parser.parse_args()
 

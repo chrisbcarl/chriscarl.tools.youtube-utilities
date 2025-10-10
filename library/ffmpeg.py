@@ -27,19 +27,30 @@ try:
     if sys.platform == 'win32':
         subprocess.check_call('ffmpeg -h > nul 2> nul', shell=True)
     else:
-        subprocess.check_call(['ffmpeg', '-h'], stdout=os.devnull, stderr=os.devnull)
+        subprocess.check_call(['ffmpeg', '-h'],
+                              stdout=os.devnull,
+                              stderr=os.devnull)
     FFMPEG_INSTALLED = True
 except subprocess.CalledProcessError:
-    raise ImportError('"ffmpeg" not installed! consider a package manager like chocolatey or apt-get!') from None
+    raise ImportError(
+        '"ffmpeg" not installed! consider a package manager like chocolatey or apt-get!'
+    ) from None
 MAGICK_INSTALLED = False
 try:
     if sys.platform == 'win32':
-        subprocess.check_call('where.exe magick', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        subprocess.check_call('where.exe magick',
+                              stdout=subprocess.DEVNULL,
+                              stderr=subprocess.DEVNULL,
+                              shell=True)
     else:
-        subprocess.check_call(['which', 'magick'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.check_call(['which', 'magick'],
+                              stdout=subprocess.DEVNULL,
+                              stderr=subprocess.DEVNULL)
     FFMPEG_INSTALLED = True
 except subprocess.CalledProcessError:
-    raise ImportError('"magick" not installed! consider a package manager like chocolatey or apt-get!') from None
+    raise ImportError(
+        '"magick" not installed! consider a package manager like chocolatey or apt-get!'
+    ) from None
 
 
 def ffmpeg_args(input_filepath):
@@ -60,16 +71,17 @@ def trim_args(input_filepath, output_filepath, start=None, stop=None):
 KB_REGEX = re.compile(r'(\d+)')
 
 
-def mp3_args(input_filepath, output_filepath, bitrate='320k', sampling_frequency=48000):
+def mp3_args(input_filepath,
+             output_filepath,
+             bitrate='320k',
+             sampling_frequency=48000):
     args = ffmpeg_args(input_filepath)
     numeric_bitrate = KB_REGEX.match(bitrate).groups()[0]
     ab = f'{numeric_bitrate}k'
 
     args += [
-        '-vn',
-        '-acodec', 'libmp3lame',
-        '-ac', '2', '-ab', ab, '-ar', str(sampling_frequency),
-        output_filepath
+        '-vn', '-acodec', 'libmp3lame', '-ac', '2', '-ab', ab, '-ar',
+        str(sampling_frequency), output_filepath
     ]
     return args
 
@@ -86,15 +98,15 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
     https://stackoverflow.com/a/28321986
     https://alvinalexander.com/mac-os-x/mac-convert-bmp-images-jpeg-jpg-imagemagick
     '''
-    if not os.path.isdir(output_dirpath):
-        os.makedirs(output_dirpath)
+    os.makedirs(output_dirpath, exist_ok=True)
 
     args = ['ffprobe', video_filepath]
     exit_code, stdout, stderr = run_subprocess(args, video_filepath)
     if exit_code != 0:
         raise RuntimeError('failed ffprobe!')
 
-    duration_timestamp = DURATION_REGEX.search(stdout + stderr).groups()[0].strip()
+    duration_timestamp = DURATION_REGEX.search(stdout +
+                                               stderr).groups()[0].strip()
     seconds = timestamp_to_seconds(duration_timestamp)
 
     thumbnails = []
@@ -107,9 +119,11 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
         #     -frames:v 1 period_down_%d.bmp
         thumbnail_filepath = os.path.join(output_dirpath, f'{skip_to}.bmp')
         args = [
-            'ffmpeg', '-y', '-accurate_seek', '-ss', skip_to, '-i', video_filepath, '-frames:v', '1', thumbnail_filepath
+            'ffmpeg', '-y', '-accurate_seek', '-ss', skip_to, '-i',
+            video_filepath, '-frames:v', '1', thumbnail_filepath
         ]
-        exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), video_filepath)
+        exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args),
+                                         video_filepath)
         if exit_code != 0:
             raise RuntimeError('failed thumbnail generation!')
         thumbnails.append(thumbnail_filepath)
@@ -120,19 +134,19 @@ def generate_thumbnails(video_filepath, output_dirpath, samples=50, keep=10):
         jpg_thumbnail = thumbnail.replace(ext, '.jpg')
         small_thumbnails.append(jpg_thumbnail)
         # TODO: think about processing a few at once, but not too many such that the arguments length is too long for the os...
-        args = [
-            'magick', 'mogrify', '-format', 'jpg', thumbnail
-        ]
+        args = ['magick', 'mogrify', '-format', 'jpg', thumbnail]
         exit_code, _, _ = run_subprocess(args, video_filepath)
         if exit_code != 0:
             raise RuntimeError('failed thumbnail generation!')
 
     # more size == more "detail" in the picture, but you could use any algo here
     # TODO: offer different algos to try
-    rankings = list(sorted(small_thumbnails, key=os.path.getsize, reverse=True))
+    rankings = list(sorted(small_thumbnails, key=os.path.getsize,
+                           reverse=True))
     keepers = []
     for top_candidate in rankings[0:keep]:
-        destination = os.path.join(output_dirpath, f'thumbnail-{os.path.basename(top_candidate)}')
+        destination = os.path.join(
+            output_dirpath, f'thumbnail-{os.path.basename(top_candidate)}')
         shutil.copy2(top_candidate, destination)
         keepers.append(destination)
 
@@ -166,25 +180,28 @@ def generate_gif(filepaths, output_filepath, delay=10, megabytes=10, loop=0):
         new_filepath = os.path.join(temp_dirpath, f'{f}{ext}')
         shutil.copy(filepath, new_filepath)
     output_dirpath = os.path.dirname(output_filepath)
-    if not os.path.isdir(output_dirpath):
-        os.makedirs(output_dirpath)
+    os.makedirs(output_dirpath, exist_ok=True)
 
     percentage = 100
     output_filepath_size = 0
     while percentage > 0:
         args = [
-            'magick', 'convert',
-            '-delay', str(delay),
-            '-loop', str(loop),
+            'magick',
+            'convert',
+            '-delay',
+            str(delay),
+            '-loop',
+            str(loop),
         ]
         if percentage < 100:
             args += [
-                '-resize', f'{percentage}%',
+                '-resize',
+                f'{percentage}%',
             ]
-        args += [
-            '*', output_filepath
-        ]
-        exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args), os.path.basename(output_filepath), cwd=temp_dirpath)
+        args += ['*', output_filepath]
+        exit_code, _, _ = run_subprocess(subprocess.list2cmdline(args),
+                                         os.path.basename(output_filepath),
+                                         cwd=temp_dirpath)
         if exit_code != 0:
             LOGGER.error('failed gif generation!')
             raise RuntimeError('failed gif generation!')
@@ -197,8 +214,11 @@ def generate_gif(filepaths, output_filepath, delay=10, megabytes=10, loop=0):
 
     shutil.rmtree(temp_dirpath)
     if output_filepath_size > megabytes:
-        LOGGER.error('generated gif "%s" has size %0.2fMB which is greater than requested %0.2fMB', output_filepath, output_filepath_size, megabytes)
+        LOGGER.error(
+            'generated gif "%s" has size %0.2fMB which is greater than requested %0.2fMB',
+            output_filepath, output_filepath_size, megabytes)
         return False
     else:
-        LOGGER.info('generated gif "%s" with size %0.2fMB!', output_filepath, output_filepath_size)
+        LOGGER.info('generated gif "%s" with size %0.2fMB!', output_filepath,
+                    output_filepath_size)
         return True
