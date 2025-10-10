@@ -47,6 +47,10 @@ Baynk:
   genre: Electronic
   ins: https://www.instagram.com/baynkofficial
   twi: https://twitter.com/baynkofficial
+Cartel:
+  genre: Pop Punk
+  ins: https://www.instagram.com/cartel.band
+  twi: https://x.com/Cartel
 Chet Porter:
   genre: House
   ins: https://www.instagram.com/chetporter
@@ -91,6 +95,10 @@ Geller:
   genre: Electronic Rock
   ins: https://www.instagram.com/gellermusic
   twi: https://twitter.com/gellermusic
+HUNNY:
+  genre: Indie Rock
+  ins: https://www.instagram.com/hunnytheband
+  twi: https://twitter.com/hunnytheband
 Ilan Bluestone:
   genre: Trance
   ins: null
@@ -123,6 +131,10 @@ Levi Double U:
   genre: House
   ins: http://instagram.com/levidoubleu
   twi: https://twitter.com/levidoubleu
+MACSEAL:
+  genre: Indie Rock
+  ins: https://www.instagram.com/macsealband/
+  twi: https://twitter.com/macsealband
 Machinedrum:
   genre: House
   ins: null
