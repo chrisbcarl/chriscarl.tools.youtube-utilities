@@ -44,7 +44,7 @@ def tpl_to_timestamp(h, m, s, pad_zeros=False):
     return timestamp
 
 
-ARTIST_DB = LiveDict(load_yaml, (ARTIST_DB_FILEPATH,))
+ARTIST_DB = LiveDict(load_yaml, (ARTIST_DB_FILEPATH, ))
 
 
 def timestamp_to_tuple(timestamp):
@@ -247,17 +247,22 @@ class Video(object):
     def post_process(self, title_default='Live', genre_default=None):
         self.title = self.title or title_default
         if self.genre is None:
-            self.genre = ARTIST_DB.get(self.artist, {}).get('genre', genre_default)
+            self.genre = ARTIST_DB.get(self.artist,
+                                       {}).get('genre', genre_default)
 
         self._format_values = {}
         for lst in [Video.CRITICAL_FORMATTABLE_ATTRIBUTES]:
             for key in lst:
                 self._post_process(f'_{key}')
-        for lst in [Video.CRITICAL_STATIC_ATTRIBUTES, Video.NON_CRITICAL_STATIC_ATTRIBUTES]:
+        for lst in [
+                Video.CRITICAL_STATIC_ATTRIBUTES,
+                Video.NON_CRITICAL_STATIC_ATTRIBUTES
+        ]:
             for key in lst:
                 self._post_process(key)
         for attr in Video.NON_CRITICAL_FORMATTABLE_ATTRIBUTES + Video.CRITICAL_FORMATTABLE_ATTRIBUTES:
-            self._format_values[attr] = getattr(self, attr)  # trigger property computation
+            self._format_values[attr] = getattr(
+                self, attr)  # trigger property computation
 
     def __str__(self):
         return f'Video[{self.track_num}]({self.filesize})<"{self.filepath}">'
@@ -284,7 +289,8 @@ class Video(object):
             if isinstance(original_value, str):
                 if '{' in original_value:
                     formatted = original_value.format(**self._format_values)
-                    LOGGER.debug('%s %r is a format, converting from %r to %r', self, attr, original_value, formatted)
+                    LOGGER.debug('%s %r is a format, converting from %r to %r',
+                                 self, attr, original_value, formatted)
                 else:
                     formatted = original_value
                 self._format_values[attr] = formatted
