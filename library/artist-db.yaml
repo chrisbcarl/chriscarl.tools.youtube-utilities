@@ -55,6 +55,10 @@ Chet Porter:
   genre: House
   ins: https://www.instagram.com/chetporter
   twi: https://twitter.com/chetporter
+Contact Sports:
+  genre: Hyperpop
+  ins: https://www.instagram.com/contactspoorts
+  tik: https://www.tiktok.com/@contactspoorts
 DJ Diesel (Shaquille O'Neal):
   genre: Dubstep
   ins: null
@@ -238,8 +242,8 @@ Supercomputer:
   twi: null
 Toro y Moi:
   genre: Chillwave
-  ins: null
-  twi: null
+  ins: https://www.instagram.com/toroymoi
+  twi: https://x.com/toroymoi
 Vodenik:
   genre: Dubstep
   ins: https://www.instagram.com/vodenikmusic
