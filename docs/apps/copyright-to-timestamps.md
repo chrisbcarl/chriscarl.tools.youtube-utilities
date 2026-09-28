@@ -1,9 +1,11 @@
 # Usage - copyright-to-timestamps
+
+## v1
 1. take something that looks like ![./sample.png](./docs/sample.png)
 2. Drag from the "Content used" | "Impact on the video" columns, and paste it in a file like [copyright-example](../copyright-example.txt)
 3. run the following to get nice output
 ```bash
-python apps/copyright-to-timestamps.py copyrights.txt > timestamps.txt
+python apps/v1/copyright-to-timestamps.py copyrights.txt > timestamps.txt
 ```
 ```log
 00:04:06 - Rome In Silver - Fool

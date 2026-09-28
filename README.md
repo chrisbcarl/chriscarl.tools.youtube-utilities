@@ -4,9 +4,10 @@ A collection of utilities that may be worth using!
 
 # Apps
 1. copyright-to-timestamps: Convert the text from the Youtube Studio copyright section into usable timestamps in the description! [doc](./docs/apps/copyright-to-timestamps.md)
-```bash
-python apps/copyright-to-timestamps.py copyrights.txt > timestamps.txt
-```
+    - v1
+        ```bash
+        python apps/v1/copyright-to-timestamps.py copyrights.txt > timestamps.txt
+        ```
 2. timestamp-offsetter: Offset already established timestamps from somebody else by n seconds! [doc](./docs/apps/timestamp-offsetter.md)
 ```bash
 python apps/timestamp-offsetter.py timestamps.txt "+369"
