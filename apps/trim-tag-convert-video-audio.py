@@ -348,6 +348,7 @@ def trim_tag_convert_marketing_yt(
                     state=video.state,
                     date=video.date,
                     video_stats=video.video_stats,
+                    video_platform=video.video_platform,
                     timestamps=timestamps,
                 )
                 w.write(content)

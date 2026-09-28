@@ -87,6 +87,7 @@ class Video(object):
         'resolution',
         'bitrate',
         'video_stats',
+        'video_platform',
         'commentary',
         'additional_commentary',
         'timestamps',
@@ -128,6 +129,7 @@ class Video(object):
     resolution = None
     bitrate = None
     video_stats = None
+    video_platform = None
     commentary = None
     additional_commentary = None
     timestamps = None
@@ -171,6 +173,7 @@ class Video(object):
         resolution=None,
         bitrate=None,
         video_stats=None,
+        video_platform=None,
         commentary=None,
         additional_commentary=None,
         timestamps=None,
@@ -206,6 +209,7 @@ class Video(object):
         self.resolution = resolution
         self.bitrate = bitrate
         self.video_stats = video_stats
+        self.video_platform = video_platform
         self.commentary = commentary
         self.additional_commentary = additional_commentary
         self.timestamps = timestamps
